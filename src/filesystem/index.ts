@@ -29,6 +29,7 @@ export {
   posixBasename,
   posixDirname,
   posixJoin,
+  posixStem,
   relativePosix,
   resolveFromBase,
   toNativePath,

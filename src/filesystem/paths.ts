@@ -36,6 +36,15 @@ export function posixBasename(posixPath: string): string {
   return parts[parts.length - 1] ?? normalized;
 }
 
+export function posixStem(posixPath: string): string {
+  const base = posixBasename(posixPath);
+  const dot = base.lastIndexOf(".");
+  if (dot <= 0) {
+    return base;
+  }
+  return base.slice(0, dot);
+}
+
 export function posixDirname(posixPath: string): string {
   const normalized = toPosixPath(posixPath).replace(/\/+$/, "");
   const index = normalized.lastIndexOf("/");
