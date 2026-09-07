@@ -73,6 +73,17 @@ export const SOURCE_CAPABILITIES = [
   "sync",
 ] as const;
 
+export const AGENT_CAPABILITIES = ["context", "rules", "skills"] as const;
+export const FORMAT_ENGINE_IDS = [
+  "identity",
+  "markdown-frontmatter",
+  "concatenated-markdown",
+  "reference-index",
+] as const;
+export const ADAPTER_ENGINE_IDS = ["declarative"] as const;
+export const PROVENANCE_MODES = ["header", "none"] as const;
+export const CONCAT_ORDERS = ["identity", "kind-then-name"] as const;
+
 export const MANIFEST_TOP_LEVEL_KEYS = [
   "specVersion",
   "kind",
