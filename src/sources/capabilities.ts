@@ -20,7 +20,7 @@ export function requireCapability(
   }
   if (!OPERATIONAL.has(capability)) {
     throw new AiwError("UNSUPPORTED", `Source capability '${capability}' is not implemented.`, {
-      suggestion: "Phase 4 supports read and index only. write, link, import, export, and sync are reserved.",
+      suggestion: "Phase 5 supports read, index, and import. write, link, export, and sync remain reserved.",
     });
   }
 }

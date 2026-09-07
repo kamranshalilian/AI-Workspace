@@ -7,10 +7,13 @@ import { addSource, listSources, removeSource } from "../core/source.js";
 import { doctorFrom } from "../core/doctor.js";
 import { AiwError, isAiwError } from "../core/errors.js";
 import { exportAgents } from "../core/export.js";
+import { importSource } from "../core/import.js";
 import { initScope } from "../core/init.js";
+import { promoteAgent } from "../core/promote.js";
 import { statusFrom } from "../core/status.js";
+import { syncWorkspace } from "../core/sync.js";
 import { validateFrom } from "../core/validate.js";
-import { formatAgentAdd, formatAgentCreate, formatAgentList, formatAgentRemove, formatAgentStatus, formatDoctor, formatExport, formatInit, formatSourceAdd, formatSourceList, formatSourceRemove, formatStatus, formatValidate, printJson } from "./format.js";
+import { formatAgentAdd, formatAgentCreate, formatAgentList, formatAgentRemove, formatAgentStatus, formatDoctor, formatExport, formatImport, formatInit, formatPromote, formatSourceAdd, formatSourceList, formatSourceRemove, formatStatus, formatSync, formatValidate, printJson } from "./format.js";
 import { HELP_TEXT, SOURCE_HELP_TEXT } from "./help.js";
 
 export function run(argv: string[]): number {
@@ -86,6 +89,38 @@ export function run(argv: string[]): number {
       }
       case "source": {
         return runSource(cli);
+      }
+      case "import": {
+        const result = importSource(cli.path, cli.sourceId, { dryRun: cli.dryRun });
+        if (cli.json) {
+          printJson(result);
+        } else if (!cli.quiet) {
+          process.stdout.write(formatImport(result));
+        }
+        return result.ok ? 0 : 3;
+      }
+      case "promote": {
+        const result = promoteAgent(cli.path, cli.targetId, { dryRun: cli.dryRun });
+        if (cli.json) {
+          printJson(result);
+        } else if (!cli.quiet) {
+          process.stdout.write(formatPromote(result));
+        }
+        return result.ok ? 0 : 3;
+      }
+      case "sync": {
+        const result = syncWorkspace(cli.path, {
+          sourceId: cli.sourceId,
+          agentId: cli.targetId,
+          dryRun: cli.dryRun,
+          apply: cli.apply,
+        });
+        if (cli.json) {
+          printJson(result);
+        } else if (!cli.quiet) {
+          process.stdout.write(formatSync(result));
+        }
+        return result.ok ? 0 : 3;
       }
       default: {
         throw new AiwError("USAGE", "Unknown command.");

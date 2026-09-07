@@ -1,6 +1,6 @@
 # Integrations
 
-**Status:** Phase 4 ships bundled **YAML** agent definitions, a generic adapter engine, `aiw agent create`, and generic federated **sources**. No vendor-specific TypeScript modules exist.
+**Status:** Phase 5 ships bundled **YAML** agent definitions, a generic adapter engine, `aiw agent create`, generic federated **sources**, import, promote, and state-aware sync. No vendor-specific TypeScript modules exist.
 
 AI Workspace does not give any vendor or tool a privileged core module.
 

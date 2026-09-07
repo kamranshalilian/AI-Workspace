@@ -2,6 +2,9 @@ import type { DoctorReport } from "../core/doctor.js";
 import type { AgentAddResult, AgentCreateResult, AgentListResult, AgentRemoveResult, AgentStatusResult } from "../core/agent.js";
 import type { SourceAddResult, SourceListResult, SourceRemoveResult } from "../core/source.js";
 import type { ExportResult } from "../core/export.js";
+import type { ImportResult } from "../core/import.js";
+import type { PromoteResult } from "../core/promote.js";
+import type { SyncResult } from "../core/sync.js";
 import type { InitResult } from "../core/init.js";
 import type { StatusSummary } from "../core/status.js";
 import type { ValidateReport } from "../core/validate.js";
@@ -200,6 +203,59 @@ export function formatSourceList(result: SourceListResult): string {
     lines.push(`  path: ${source.path}`);
     lines.push(`  capabilities: ${source.capabilities.join(",") || "none"}`);
     lines.push(`  status: ${source.status}`);
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+export function formatImport(result: ImportResult): string {
+  const header = result.dryRun ? "Import (dry-run)" : result.ok ? "Import: ok" : "Import: completed with conflicts";
+  const lines = [header, `  source: ${result.source.id} (${result.source.kind})`];
+  lines.push(`    written: ${result.written.join(", ") || "(none)"}`);
+  lines.push(`    unchanged: ${result.unchanged.join(", ") || "(none)"}`);
+  if (result.conflicts.length > 0) {
+    lines.push(`    conflicts: ${result.conflicts.join(", ")}`);
+  }
+  const skipped = result.skipped.filter((item) => item.action === "skipped");
+  if (skipped.length > 0) {
+    lines.push(`    skipped: ${skipped.map((item) => `${item.path} (${item.reason ?? "skipped"})`).join(", ")}`);
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+export function formatPromote(result: PromoteResult): string {
+  const header = result.dryRun ? "Promote (dry-run)" : result.ok ? "Promote: ok" : "Promote: completed with conflicts";
+  const lines = [header, `  agent: ${result.agent.id} (${result.agent.kind})`];
+  lines.push(`    written: ${result.written.join(", ") || "(none)"}`);
+  lines.push(`    unchanged: ${result.unchanged.join(", ") || "(none)"}`);
+  if (result.conflicts.length > 0) {
+    lines.push(`    conflicts: ${result.conflicts.join(", ")}`);
+  }
+  const skipped = result.skipped.filter((item) => item.action === "skipped");
+  if (skipped.length > 0) {
+    lines.push(`    skipped: ${skipped.map((item) => `${item.canonicalPath || item.nativePath} (${item.reason ?? "skipped"})`).join(", ")}`);
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+export function formatSync(result: SyncResult): string {
+  const mode = result.dryRun ? "dry-run" : result.apply ? "apply" : "report";
+  const header = result.ok ? `Sync: ok (${mode})` : `Sync: completed with conflicts (${mode})`;
+  const lines = [header];
+  if (result.relations.length === 0) {
+    lines.push("  (no related representations)");
+    return `${lines.join("\n")}\n`;
+  }
+  for (const relation of result.relations) {
+    lines.push(`  ${relation.kind}:${relation.id} ${relation.path}: ${relation.state}`);
+  }
+  if (result.written.length > 0) {
+    lines.push(`  written: ${result.written.join(", ")}`);
+  }
+  if (result.skippedUnmanaged.length > 0) {
+    lines.push(`  skipped unmanaged: ${result.skippedUnmanaged.join(", ")}`);
+  }
+  if (result.conflicts.length > 0) {
+    lines.push(`  conflicts: ${result.conflicts.join(", ")}`);
   }
   return `${lines.join("\n")}\n`;
 }

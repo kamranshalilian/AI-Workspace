@@ -66,6 +66,8 @@ test("P/Q/R/S — packed global CLI works outside the repository", { timeout: 18
     assert.equal(help.status, 0, help.stderr);
     assert.match(help.stdout, /agent create/);
     assert.match(help.stdout, /source add/);
+    assert.match(help.stdout, /import --source/);
+    assert.match(help.stdout, /promote --agent/);
 
     assert.equal(run(["init", "--name", "clean"]).status, 0);
     assert.equal(run(["status"]).status, 0);
@@ -101,10 +103,16 @@ test("P/Q/R/S — packed global CLI works outside the repository", { timeout: 18
       "--path",
       "./knowledge",
       "--capabilities",
-      "read,index",
+      "read,index,import",
     ]);
     assert.equal(sourceAdd.status, 0, sourceAdd.stderr);
-    assert.equal(fs.existsSync(path.join(outside, ".ai", "sources")), false);
+    const imported = run(["import", "--source", "knowledge", "--json"]);
+    assert.equal(imported.status, 0, imported.stderr);
+    assert.equal(fs.existsSync(path.join(outside, ".ai", "sources", "knowledge", "note.md")), true);
+    const synced = run(["sync", "--source", "knowledge", "--json"]);
+    assert.equal(synced.status, 0, synced.stderr);
+    const promoteEmpty = run(["promote", "--agent", "my-agent"]);
+    assert.equal(promoteEmpty.status, 2);
     const sourceList = run(["source", "list"]);
     assert.equal(sourceList.status, 0, sourceList.stderr);
     assert.match(sourceList.stdout, /knowledge/);

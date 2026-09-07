@@ -52,10 +52,12 @@ Phase 4 implemented generic directory/file/repository/generated sources, capabil
 
 ## Phase 5 — Synchronization
 
-- import (non-destructive)
-- export already exists; add conflict classification
-- `sync` report-only
-- optional `--promote` with explicit conversion
+- import (non-destructive Source → `.ai/sources/<id>/`)
+- promote (explicit native → canonical, reversible mappings only)
+- export already exists; sync classifies four-state change
+- `sync` report-only by default; `--apply` writes one-sided non-conflict updates only
+
+Phase 5 implemented generic import, promote, deterministic state identity in `.ai/state/sync.yaml`, and conflict detection. Graphify and spec-kit remain fixtures.
 
 ## Phase 6 — Workspace federation
 

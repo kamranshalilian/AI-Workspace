@@ -13,6 +13,7 @@ AI-Workspace/
 │   ├── agents/                   # definition loading
 │   ├── adapters/                 # generic engine + format engines
 │   ├── sources/
+│   ├── state/                    # sync identity + last-known hashes
 │   ├── filesystem/
 │   └── config/
 ├── definitions/
@@ -47,6 +48,7 @@ AI-Workspace/
 | `src/config` | Constants, default exclusions, spec version | Vendor names as behavior |
 | `src/resolution` | Chain, merge, snapshot | Native file generation |
 | `src/sources` | Source types, capability checks | Agent mappings |
+| `src/state` | Content identity, four-state compare, `.ai/state/sync.yaml` | Vendor branches |
 | `src/agents` | Definition search and parse | `if cursor` |
 | `src/adapters` | Mapping interpreter, format engines | CLI |
 | `src/core` | Facade composing the above | `process.argv` |

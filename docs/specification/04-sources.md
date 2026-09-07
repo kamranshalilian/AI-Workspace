@@ -80,6 +80,7 @@ v1 recognized capabilities:
 | --- | --- |
 | `read` | Files may be opened for resolution/status |
 | `index` | Files may be listed and included in status inventories |
+| `import` | May copy a snapshot into `.ai/sources/<id>/` |
 
 Recognized but **not implemented** in v1 (declaration allowed, operations rejected):
 
@@ -87,9 +88,8 @@ Recognized but **not implemented** in v1 (declaration allowed, operations reject
 | --- | --- |
 | `write` | AI Workspace may write into the source |
 | `link` | May create a native-interface pointer |
-| `import` | May copy a snapshot into `.ai/sources/` |
 | `export` | May write canonical content back to the source |
-| `sync` | Bidirectional update |
+| `sync` | Bidirectional update of the live source |
 
 Core must inspect declared capabilities before any operation. An undeclared capability is a hard error for that operation.
 
@@ -99,8 +99,8 @@ Unknown capability strings are validation errors in v1 (closed set).
 
 - Do not copy source trees into `.ai/` during `init`, `status`, `doctor`, or resolution.
 - `aiw source add` writes a manifest entry only.
-- Physical import into `.ai/sources/<id>/` is a later **import** operation (Phase 5) and still leaves the original in place.
-- Resolution may record source files in the snapshot as `source:<id>:<relativePath>` identities so adapters *could* consume them later. **Phase 4 inventories sources for status/list. It does not feed source files into agent export.** Export of source content and import into `.ai/sources/` are Phase 5.
+- Physical import into `.ai/sources/<id>/` is `aiw import` (Phase 5) and still leaves the original in place.
+- Resolution may record source files in the snapshot as `source:<id>:<relativePath>` identities so adapters *could* consume them later. **Phase 4 inventories sources for status/list. It does not feed source files into agent export.** Export of source content remains out of scope.
 
 ## Path rules
 

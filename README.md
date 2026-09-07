@@ -4,7 +4,7 @@ AI Workspace is a **local-first, Git-friendly, tool-agnostic context layer** for
 
 It gives a project one canonical place for AI knowledge — `.ai/` — and treats agent-specific files such as `.cursor/`, `AGENTS.md`, and `CLAUDE.md` as **adapters** of that layer, not as the source of truth.
 
-**Current status: Phase 4 (sources and context federation).** The globally installed `aiw` CLI can initialize a local `.ai` directory, resolve inheritance, create and register declarative YAML agent definitions, export native files, and register federated sources by reference. Import/sync and workspace `--all` are not implemented.
+**Current status: Phase 5 (synchronization, import, promote, and conflict detection).** The globally installed `aiw` CLI can initialize a local `.ai` directory, resolve inheritance, create and register declarative YAML agent definitions, export native files, register federated sources by reference, import source snapshots, promote native artifacts into canonical `.ai/` files, and report state-aware sync conflicts. Workspace `--all` is not implemented.
 
 ## Requirements
 
@@ -122,7 +122,7 @@ source list   = show type, path, capabilities, and resolution status
 source remove = unregister the reference
 ```
 
-The live files remain at `path`. `.ai/sources/` is reserved for a later import snapshot (Phase 5) and is **not** created by these commands.
+The live files remain at `path`. `aiw import --source <id>` can later snapshot them into `.ai/sources/<id>/`. Registration itself does **not** create that directory.
 
 See [Sources](docs/specification/04-sources.md).
 
@@ -187,18 +187,27 @@ aiw agent remove cursor
 ## How to add a source
 
 ```bash
-aiw source add knowledge --type directory --path ../knowledge --capabilities read,index
+aiw source add knowledge --type directory --path ../knowledge --capabilities read,index,import
+aiw import --source knowledge
+aiw sync --source knowledge
 ```
 
-Only `.ai/manifest.yaml` changes. The referenced tree is not copied.
+Registration changes only `.ai/manifest.yaml`. Import copies a snapshot into `.ai/sources/<id>/` and leaves the live source untouched. Sync compares the snapshot to the live tree and never last-write-wins.
+
+```bash
+aiw promote --agent cursor
+```
+
+Promotion converts native agent files into canonical `.ai/` resources when a declared reversible mapping exists (`identity` or `markdown-frontmatter`). Concatenated outputs cannot be promoted.
 
 ## Current limitations
 
-- No import, promote, or sync
+- Concatenated and reference-index native files cannot be promoted (no lossless reverse mapping)
+- `sync --apply` never writes into a live source; it may refresh the imported snapshot
+- No automatic native→canonical promotion during sync
 - No workspace project registry CLI or `--all`
 - No executable adapters or plugins
-- Only the `generated` integration strategy is implemented
-- Source content is not fed into agent export yet
+- Source content is not fed into agent export
 - No MCP, embeddings, cloud, or GUI
 
 ## Development

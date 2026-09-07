@@ -2,7 +2,17 @@ import { parseArgs } from "node:util";
 import { AiwError } from "../core/errors.js";
 import type { ScopeKind } from "../manifest/types.js";
 
-export type CommandName = "init" | "status" | "validate" | "doctor" | "agent" | "export" | "source";
+export type CommandName =
+  | "init"
+  | "status"
+  | "validate"
+  | "doctor"
+  | "agent"
+  | "export"
+  | "source"
+  | "import"
+  | "promote"
+  | "sync";
 export type AgentAction = "add" | "remove" | "list" | "status" | "create";
 export type SourceAction = "add" | "remove" | "list";
 
@@ -22,10 +32,13 @@ export interface ParsedCli {
   targetId: string | undefined;
   sourceType: string | undefined;
   sourcePath: string | undefined;
+  sourceId: string | undefined;
   capabilities: string | undefined;
+  dryRun: boolean;
+  apply: boolean;
 }
 
-const LATER_COMMANDS = new Set(["adapter", "import", "sync", "project", "workspace"]);
+const LATER_COMMANDS = new Set(["adapter", "project", "workspace"]);
 
 export function parseCli(argv: string[]): ParsedCli {
   let parsed;
@@ -48,6 +61,9 @@ export function parseCli(argv: string[]): ParsedCli {
         agent: { type: "string" },
         type: { type: "string" },
         capabilities: { type: "string" },
+        source: { type: "string" },
+        "dry-run": { type: "boolean", default: false },
+        apply: { type: "boolean", default: false },
       },
     });
   } catch (error) {
@@ -67,8 +83,8 @@ export function parseCli(argv: string[]): ParsedCli {
   const commandRaw = positionals[0];
 
   if (commandRaw !== undefined && LATER_COMMANDS.has(commandRaw)) {
-    throw new AiwError("UNSUPPORTED", `Command '${commandRaw}' is not implemented in Phase 4.`, {
-      suggestion: "Phase 4 supports: init, status, validate, doctor, agent, export, source.",
+    throw new AiwError("UNSUPPORTED", `Command '${commandRaw}' is not implemented in Phase 5.`, {
+      suggestion: "Phase 5 supports: init, status, validate, doctor, agent, export, source, import, promote, sync.",
     });
   }
 
@@ -87,8 +103,11 @@ export function parseCli(argv: string[]): ParsedCli {
   let targetId: string | undefined = parsed.values.agent;
   let sourceType = parsed.values.type;
   let sourcePath: string | undefined;
+  let sourceId = parsed.values.source;
   let capabilities = parsed.values.capabilities;
   let startDir = parsed.values.path ?? process.cwd();
+  const dryRun = parsed.values["dry-run"] === true;
+  const apply = parsed.values.apply === true;
 
   if (command === "agent") {
     const actionRaw = positionals[1];
@@ -159,7 +178,7 @@ export function parseCli(argv: string[]): ParsedCli {
         throw new AiwError("USAGE", `Unexpected arguments: ${positionals.slice(2).join(" ")}.`);
       }
     }
-  } else if (command === "export") {
+  } else if (command === "export" || command === "import" || command === "promote" || command === "sync") {
     if (positionals.length > 1) {
       throw new AiwError("USAGE", `Unexpected arguments: ${positionals.slice(1).join(" ")}.`);
     }
@@ -178,8 +197,28 @@ export function parseCli(argv: string[]): ParsedCli {
     }
   }
 
-  if (command !== "export" && parsed.values.agent !== undefined) {
-    throw new AiwError("USAGE", "--agent is only valid for `aiw export`.");
+  if (parsed.values.agent !== undefined && command !== "export" && command !== "promote" && command !== "sync") {
+    throw new AiwError("USAGE", "--agent is only valid for `aiw export`, `aiw promote`, and `aiw sync`.");
+  }
+
+  if (sourceId !== undefined && command !== "import" && command !== "sync") {
+    throw new AiwError("USAGE", "--source is only valid for `aiw import` and `aiw sync`.");
+  }
+
+  if (dryRun && command !== "import" && command !== "promote" && command !== "sync") {
+    throw new AiwError("USAGE", "--dry-run is only valid for `aiw import`, `aiw promote`, and `aiw sync`.");
+  }
+
+  if (apply && command !== "sync") {
+    throw new AiwError("USAGE", "--apply is only valid for `aiw sync`.");
+  }
+
+  if (command === "import" && (sourceId === undefined || sourceId.trim() === "") && parsed.values.help !== true) {
+    throw new AiwError("USAGE", "Usage: aiw import --source <id> [--dry-run] [--json].");
+  }
+
+  if (command === "promote" && (targetId === undefined || targetId.trim() === "") && parsed.values.help !== true) {
+    throw new AiwError("USAGE", "Usage: aiw promote --agent <id> [--dry-run] [--json].");
   }
 
   if (command !== "source") {
@@ -214,7 +253,10 @@ export function parseCli(argv: string[]): ParsedCli {
     targetId,
     sourceType,
     sourcePath,
+    sourceId,
     capabilities,
+    dryRun,
+    apply,
   };
 }
 
@@ -226,7 +268,10 @@ function isCommand(value: string): value is CommandName {
     value === "doctor" ||
     value === "agent" ||
     value === "export" ||
-    value === "source"
+    value === "source" ||
+    value === "import" ||
+    value === "promote" ||
+    value === "sync"
   );
 }
 

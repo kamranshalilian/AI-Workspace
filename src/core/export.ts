@@ -3,6 +3,7 @@ import { definitionSearchDirs, resolveDefinition } from "../agents/index.js";
 import { applyExport, planArtifacts, type ExportAgentReport } from "../adapters/engine.js";
 import { resolveFrom } from "../resolution/index.js";
 import { AiwError } from "./errors.js";
+import { recordExportedAgent } from "./sync.js";
 
 export interface ExportResult {
   specVersion: 1;
@@ -38,6 +39,7 @@ export function exportAgents(startDir: string, agentId?: string): ExportResult {
     if (applied.skippedUnmanaged.length > 0) {
       ok = false;
     }
+    recordExportedAgent(snapshot.active.root, agent.id, planned);
     reports.push({
       id: agent.id,
       definitionId: agent.definitionId,

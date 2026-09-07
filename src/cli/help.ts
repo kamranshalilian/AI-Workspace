@@ -20,6 +20,11 @@ Commands:
   source list      List registered sources
   source remove <id>
                    Unregister a source (manifest only)
+  import --source <id>
+                   Snapshot a registered source into .ai/sources/<id>/
+  promote --agent <id>
+                   Convert native agent files into canonical .ai/ resources
+  sync             Report related canonical/source/native state
 
 Global options:
   --path <dir>   Start discovery from this directory
@@ -42,11 +47,28 @@ source add options:
   --path <path>          POSIX source path relative to the scope root
   --capabilities <list>  comma-separated, default: read
 
+import options:
+  --source <id>  Registered source to snapshot
+  --dry-run      Report writes without modifying files
+
+promote options:
+  --agent <id>   Registered agent whose native files to convert
+  --dry-run      Report writes without modifying files
+
+sync options:
+  --source <id>  Compare one source (default: resolved sources)
+  --agent <id>   Compare one agent (default: enabled agents)
+  --dry-run      Preview --apply writes without modifying files
+  --apply        Write one-sided non-conflict updates (never last-write-wins)
+
 Install globally with npm install -g ai-workspace. Workspace state stays in .ai/.
 
 create = create definition
 add    = enable/register
 export = materialize native output
+import = Source → canonical snapshot
+promote = native artifact → canonical
+sync   = state-aware comparison
 
 source add = register a federated reference (does not copy, import, or execute)
 `;

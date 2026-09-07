@@ -77,7 +77,7 @@ export const SOURCE_CAPABILITIES = [
   "export",
   "sync",
 ] as const;
-export const OPERATIONAL_SOURCE_CAPABILITIES = ["read", "index"] as const;
+export const OPERATIONAL_SOURCE_CAPABILITIES = ["read", "index", "import"] as const;
 
 export const AGENT_CAPABILITIES = ["context", "rules", "skills"] as const;
 export const FORMAT_ENGINE_IDS = [

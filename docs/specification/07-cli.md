@@ -79,8 +79,9 @@ aiw source remove <id>
 ### Phase 5 — Import / sync
 
 ```text
-aiw import --from <agent-id> [--promote]
-aiw sync [--agent <id>]
+aiw import --source <id> [--dry-run]
+aiw promote --agent <id> [--dry-run]
+aiw sync [--source <id>] [--agent <id>] [--dry-run] [--apply]
 ```
 
 ### Phase 6 — Workspace federation
@@ -207,13 +208,30 @@ Does not create a project `.ai`. Does not modify the project. Suggests `aiw init
 
 ### `aiw import`
 
-Phase 5. Snapshot native artifacts into `.ai/sources/<id>/`. Original remains.
+Snapshot a registered source into `.ai/sources/<id>/`. The live source remains at its declared `path`. Import is not Source→Agent and does not export.
 
-`--promote` also writes canonical resources. Conversion must be explicit and described in command output.
+Requires declared capabilities `read`, `index`, and `import`. Security exclusions, include/exclude, and deterministic ordering apply. `--dry-run` reports writes without creating files.
+
+Unmanaged files already under the snapshot destination are not overwritten (exit `3`).
+
+### `aiw promote`
+
+Convert native agent artifacts into canonical `.ai/` resources using a declared reversible mapping. Always explicit. `--dry-run` reports writes without modifying canonical files.
+
+If no reversible mapping exists, or the format is concatenated/reference-index, fail clearly. Do not guess or invoke an LLM.
 
 ### `aiw sync`
 
-Phase 5. Report only in MVP of this phase: `canonical`, `native`, `both`, `conflict`. No automatic overwrite.
+Compare related representations using last-known content hashes:
+
+| Canonical/snapshot | External/native | State |
+| --- | --- | --- |
+| unchanged | unchanged | `clean` |
+| changed | unchanged | `canonical-changed` |
+| unchanged | changed | `external-changed` |
+| changed | changed | `conflict` |
+
+Default is report-only. `--apply` writes one-sided non-conflict updates only. `--dry-run` previews those writes. Conflict never overwrites either side.
 
 ## Output
 

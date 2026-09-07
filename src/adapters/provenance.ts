@@ -68,6 +68,18 @@ export function isManagedContents(contents: string): boolean {
   return parseProvenance(contents) !== undefined;
 }
 
+export function stripProvenance(contents: string): string {
+  const match = COMMENT_RE.exec(contents);
+  if (match === null) {
+    return contents;
+  }
+  const body = match[1] ?? "";
+  if (!body.startsWith("aiw-provenance:")) {
+    return contents;
+  }
+  return contents.slice(match[0].length);
+}
+
 function yamlString(value: string): string {
   if (/^[A-Za-z0-9_./:-]+$/.test(value)) {
     return value;

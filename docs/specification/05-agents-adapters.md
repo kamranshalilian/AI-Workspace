@@ -196,23 +196,23 @@ Never delete native files on `agent remove` unless the user passes an explicit f
 
 ## Import vs promote
 
-Phase 5.
-
 ### Import
 
-Copy or snapshot the native artifact into:
-
 ```text
-.ai/sources/<agent-id>/...
+Source → .ai/sources/<id>/ snapshot
 ```
 
-Original native file stays.
+The live source remains an external source of truth. Importing does not transfer ownership and does not export to agents.
 
 ### Promote
 
-Create a canonical resource, e.g. `.ai/rules/payment.md`, from an imported or native file, with an explicit format conversion.
+```text
+Native agent artifact → canonical .ai/ resource
+```
 
-Promotion must be requested (`--promote` or `aiw import --promote`). Never implied by import.
+Promotion is always explicit (`aiw promote --agent <id>`). It uses only a declared reversible format mapping (`identity` or `markdown-frontmatter`). Concatenated and reference-index outputs fail clearly.
+
+Never implied by import. Never inferred by an LLM.
 
 ## User-defined agents
 

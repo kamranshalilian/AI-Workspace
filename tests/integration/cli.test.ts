@@ -126,9 +126,9 @@ test("CLI exits 4 when no .ai is present", () => {
 });
 
 test("later-phase commands are rejected", () => {
-  const result = aiw(["import"]);
+  const result = aiw(["project"]);
   assert.equal(result.status, 2);
-  assert.match(result.stderr, /Phase 4/);
+  assert.match(result.stderr, /Phase 5/);
 });
 
 test("--all is rejected in Phase 1", () => {

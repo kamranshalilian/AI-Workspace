@@ -1,6 +1,6 @@
 # CLI documentation
 
-**Status:** Phase 4 implemented: `init`, `status`, `validate`, `doctor`, `agent create|add|remove|list|status`, `export`, `source add|list|remove`.
+**Status:** Phase 5 implemented: `init`, `status`, `validate`, `doctor`, `agent create|add|remove|list|status`, `export`, `source add|list|remove`, `import`, `promote`, `sync`.
 
 The normative contract is [docs/specification/07-cli.md](../specification/07-cli.md).
 
@@ -77,6 +77,40 @@ Source registration ≠ execution
 
 `--path` on `source add` is the federated source path (POSIX-normalized in the manifest). Discovery starts from the current working directory. Types: `directory`, `file`, `repository`, `generated`. Missing source paths register successfully and appear as `unresolved`.
 
+## Phase 5 commands
+
+```bash
+aiw import --source <id> [--dry-run] [--json]
+aiw promote --agent <id> [--dry-run] [--json]
+aiw sync [--source <id>] [--agent <id>] [--dry-run] [--apply] [--json]
+```
+
+```text
+import  = Source → .ai/sources/<id>/ snapshot
+promote = native agent artifact → canonical .ai/ resource
+export  = canonical → native (Phase 2, unchanged)
+sync    = state-aware comparison of already-related representations
+```
+
+Import requires the source to declare `read`, `index`, and `import`. It never executes the source, never deletes it, and never exports afterward.
+
+Promote requires a declared reversible mapping (`identity` or `markdown-frontmatter`). Concatenated and reference-index formats fail clearly.
+
+`aiw sync` is report-only unless `--apply` is passed. `--apply` writes only one-sided non-conflict updates: it may refresh an imported snapshot from a live source, or refresh a managed native file from canonical content. It never writes into a live source, never auto-promotes, never overwrites unmanaged files, and never merges conflicts.
+
+Four-state model:
+
+```text
+clean
+canonical-changed
+external-changed
+conflict
+```
+
+Conflict exit code is `3`. Both sides are preserved.
+
+Last-known hashes live in `.ai/state/sync.yaml` (Git-ignored). Imported file provenance lives in `.ai/sources/<id>/.aiw-import.yaml`.
+
 ## Later phases
 
-Import/export-sync and workspace `--all` are **not** available yet.
+Workspace `--all` and project registry commands are **not** available yet.

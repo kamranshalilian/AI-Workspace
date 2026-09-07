@@ -6,3 +6,6 @@ export { validateFrom, type ValidateReport } from "./validate.js";
 export { addAgent, agentStatus, createAgent, listAgents, removeAgent } from "./agent.js";
 export { addSource, listSources, removeSource } from "./source.js";
 export { exportAgents, type ExportResult } from "./export.js";
+export { importSource, type ImportResult } from "./import.js";
+export { promoteAgent, type PromoteResult } from "./promote.js";
+export { syncWorkspace, type SyncResult } from "./sync.js";
