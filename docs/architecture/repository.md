@@ -1,6 +1,6 @@
 # Repository structure
 
-This is the **target** layout. Phase 0 only adds documentation. Do not create empty `src/` trees until Phase 1.
+This is the **target** layout. Phase 1 creates only modules that have a Phase 1 responsibility (`cli`, `manifest`, `resolution`, `filesystem`, `config`, `core`). `agents/`, `adapters/`, `sources/`, `definitions/`, and `examples/` remain absent until their phases.
 
 ```text
 AI-Workspace/
@@ -69,6 +69,8 @@ Proposed:
 After schema approval, this repository gets `kind: workspace` or `kind: project` `.ai/` describing its own architecture, rules, and decisions (ADR-style files under `.ai/decisions/` as specified).
 
 Phase 0 does **not** create `.ai/` yet, because the schema is not approved.
+
+After approval, this repository dogfoods as `kind: project`.
 
 ADR topics already identified (to write when dogfooding starts):
 

@@ -2,13 +2,11 @@
 
 Implementation follows this sequence. A later phase must not be started as production code until the previous phase's acceptance tests pass, unless a documented exception is approved.
 
-## Phase 0 — Specification (current)
+## Phase 0 — Specification (complete)
 
 Delivered as documents under `docs/specification/` and `docs/architecture/`.
 
-No production implementation.
-
-**Stop for review and approval.**
+Approved 2026-09-07.
 
 ## Phase 1 — Core
 

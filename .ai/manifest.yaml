@@ -1,0 +1,4 @@
+specVersion: 1
+kind: project
+name: ai-workspace
+description: Canonical context for the AI Workspace repository
