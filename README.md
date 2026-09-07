@@ -4,7 +4,7 @@ AI Workspace is a **local-first, Git-friendly, tool-agnostic context layer** for
 
 It gives a project one canonical place for AI knowledge — `.ai/` — and treats agent-specific files such as `.cursor/`, `AGENTS.md`, and `CLAUDE.md` as **adapters** of that layer, not as the source of truth.
 
-**Current status: Phase 1 (core).** The `aiw` CLI can initialize, validate, inspect, and diagnose a `.ai` directory. Agent adapters, sources CLI, import/sync, and workspace `--all` are specified but not implemented.
+**Current status: Phase 2 (declarative adapters).** The `aiw` CLI can initialize a `.ai` directory, resolve inheritance, register bundled or local YAML agent definitions, and export deterministic native files. User-defined `agent create`, sources CLI, import/sync, and workspace `--all` are not implemented.
 
 ## Requirements
 
@@ -40,7 +40,7 @@ Human / Developer
         │
    ┌────┼────┐
    │    │    │
-Cursor Codex Claude  ← adapters / native interfaces (Phase 2+)
+Cursor Codex Claude  ← adapters / native interfaces
 ```
 
 `.ai/` is the canonical AI knowledge layer of a project or workspace. Agent-native files are downstream consumers.
@@ -84,7 +84,11 @@ See [Scope, inheritance, and resolution](docs/specification/03-scope-inheritance
 
 ## How adapters work
 
-Specified, not implemented in Phase 1. Adapters will be declarative YAML interpreted by a generic engine. Core does not contain `if agent === "cursor"` logic.
+An **agent** is a named consumer. An **adapter** maps canonical resources onto that agent's native files and formats.
+
+Adapters are declarative YAML. The core ships generic format engines (`identity`, `markdown-frontmatter`, `concatenated-markdown`, `reference-index`). It does not contain vendor-named TypeScript branches.
+
+Generated files include an `aiw-provenance` HTML comment. Export will update those managed files and will not overwrite unmanaged native files.
 
 See [Agents and adapters](docs/specification/05-agents-adapters.md).
 
@@ -123,13 +127,21 @@ See [CLI](docs/cli/README.md).
 
 ## How to add an agent
 
-Not implemented (Phase 2).
-
 ```bash
 aiw agent add cursor
+aiw export
 ```
 
-will be the eventual command. It does not work yet.
+`aiw agent add` registers the definition in `.ai/manifest.yaml` only. `aiw export` writes native files. Bundled definition ids currently include `cursor`, `claude`, and `codex`. A project-local file at `.ai/agents/<id>.yaml` can be added the same way.
+
+```bash
+aiw agent list
+aiw agent status
+aiw export --agent cursor
+aiw agent remove cursor
+```
+
+Removal does not delete native files.
 
 ## How to add a source
 
@@ -137,11 +149,12 @@ Not implemented (Phase 4). You may already declare `sources:` in `manifest.yaml`
 
 ## Current limitations
 
-- No agent export, enable/disable, or user-defined agent CLI
+- No `aiw agent create` stub generator (Phase 3)
 - No source connectors or `aiw source` command
 - No import, promote, or sync
 - No workspace project registry CLI or `--all`
 - No executable adapters or plugins
+- Only the `generated` integration strategy is implemented
 - No MCP, embeddings, cloud, or GUI
 
 ## Development

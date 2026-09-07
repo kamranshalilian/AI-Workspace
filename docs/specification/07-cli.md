@@ -147,11 +147,11 @@ Suggestions are warnings unless they make the snapshot unsafe (then errors).
 
 ### `aiw agent add <definition-id>`
 
-1. Resolve definition (project, parent, bundled)
+1. Resolve definition (project `.ai/agents/`, inherited parents, then bundled package data)
 2. Add/merge instance into `agents:`
-3. Unless `--no-export`, run export for that agent
+3. Do **not** write native files
 
-Non-destructive export rules apply.
+Phase 2 clarification: native materialization is `aiw export`. `agent add` changes only the manifest so add remains non-destructive (acceptance: add does not create agent-native paths).
 
 ### `aiw agent remove <id>`
 

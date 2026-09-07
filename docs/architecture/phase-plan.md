@@ -32,6 +32,8 @@ Not in Phase 1: agents export, sources CLI, `--all`, import/sync.
 
 Cursor is the first definition, not a core subsystem.
 
+Phase 2 implemented the generic adapter engine, four format engines, bundled YAML definitions, agent CLI, and export.
+
 ## Phase 3 — User-defined agents
 
 - `aiw agent create`

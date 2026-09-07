@@ -1,6 +1,6 @@
 # Integrations
 
-**Status:** Architectural policy. No runtime integrations are implemented.
+**Status:** Phase 2 ships bundled **YAML** agent definitions and a generic adapter engine. No vendor-specific TypeScript modules exist.
 
 AI Workspace does not give any vendor or tool a privileged core module.
 
@@ -8,32 +8,43 @@ AI Workspace does not give any vendor or tool a privileged core module.
 
 Agents consume `.ai` through **declarative definitions** (YAML) and a generic adapter engine.
 
-Illustrative native interfaces:
+Bundled definition data (not Core code):
 
-| Agent (example) | Typical native interface |
-| --- | --- |
-| Cursor | `.cursor/rules/` |
-| Codex | `AGENTS.md` |
-| Claude | `CLAUDE.md` |
+| Definition id | Native interface (from YAML) | Format engine |
+| --- | --- | --- |
+| `cursor` | `.cursor/rules/{{stem}}.mdc` | `markdown-frontmatter` |
+| `claude` | `CLAUDE.md` | `concatenated-markdown` |
+| `codex` | `AGENTS.md` | `concatenated-markdown` |
 
 These paths belong in definition files, not in `if` statements.
 
-User-defined agents: add YAML, then `aiw agent add` / `aiw agent create` once those commands exist.
+Project-local definitions may be placed at `.ai/agents/<id>.yaml` and registered with `aiw agent add <id>`. `aiw agent create` is Phase 3.
 
 See [Agents and adapters](../specification/05-agents-adapters.md).
 
+## Adapter engine
+
+```text
+Canonical .ai → Resolution → Agent definition → Adapter engine → Format engine → Native files
+```
+
+Format engines are generic: `identity`, `markdown-frontmatter`, `concatenated-markdown`, `reference-index`.
+
+Managed files start with:
+
+```html
+<!--
+aiw-provenance:
+  specVersion: 1
+  ...
+-->
+```
+
+Export updates managed files and refuses to overwrite files that lack this marker.
+
 ## Sources
 
-Sources are federated references.
-
-| Tool (example) | How it should appear |
-| --- | --- |
-| Graphify | `type: directory` (or `generated`) pointing at `.graphify` |
-| spec-kit | `type: directory` pointing at its spec tree |
-| Another repository | `type: repository` + local path |
-| Generated docs | `type: generated` + path to output |
-
-No Graphify parser and no spec-kit parser belong in core.
+Sources are federated references. Phase 1 parses them; the `aiw source` CLI is Phase 4.
 
 See [Sources](../specification/04-sources.md).
 

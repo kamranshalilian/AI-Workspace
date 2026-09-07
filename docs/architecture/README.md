@@ -1,6 +1,6 @@
 # Architecture
 
-**Status:** Phase 0 approved. Phase 1 core is implemented.
+**Status:** Phase 0 approved. Phase 1 core and Phase 2 declarative adapters are implemented.
 
 | Document | Contents |
 | --- | --- |

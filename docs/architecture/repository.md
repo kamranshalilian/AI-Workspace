@@ -1,6 +1,6 @@
 # Repository structure
 
-This is the **target** layout. Phase 1 creates only modules that have a Phase 1 responsibility (`cli`, `manifest`, `resolution`, `filesystem`, `config`, `core`). `agents/`, `adapters/`, `sources/`, `definitions/`, and `examples/` remain absent until their phases.
+Phase 1 creates modules that have a Phase 1 responsibility (`cli`, `manifest`, `resolution`, `filesystem`, `config`, `core`). Phase 2 adds `src/agents/`, `src/adapters/`, and `definitions/agents/` YAML data. `examples/` remains absent until needed.
 
 ```text
 AI-Workspace/

@@ -11,7 +11,7 @@ MIT.
 1. Single parent only (`extends` is 0 or 1 entry).
 2. Sources are inherited in `extend` mode; paths resolve from the declaring root.
 3. Generated native files will be committed by default (adapter work is Phase 2).
-4. Bundle `cursor`, `claude`, and `codex` as YAML **data** in Phase 2. Core still has no vendor branches.
+4. Bundle `cursor`, `claude`, and `codex` as YAML **data**. Core still has no vendor branches.
 5. `aiw init` writes only `manifest.yaml`.
 6. `projects[].path` cannot leave the workspace.
 7. Missing parent is an error.
