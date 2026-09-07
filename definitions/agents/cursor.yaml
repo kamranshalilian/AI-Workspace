@@ -1,0 +1,22 @@
+specVersion: 1
+kind: agent-definition
+id: cursor
+name: Cursor
+capabilities:
+  - context
+  - rules
+native:
+  roots:
+    - .cursor
+  files: []
+adapter:
+  engine: declarative
+  strategy: generated
+  mappings:
+    - fromKind: rules
+      from: "**/*.md"
+      to: ".cursor/rules/{{stem}}.mdc"
+      format: markdown-frontmatter
+      frontmatter:
+        description: "{{stem}}"
+      provenance: header

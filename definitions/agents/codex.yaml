@@ -1,0 +1,24 @@
+specVersion: 1
+kind: agent-definition
+id: codex
+name: Codex
+capabilities:
+  - context
+  - rules
+native:
+  roots: []
+  files:
+    - AGENTS.md
+adapter:
+  engine: declarative
+  strategy: generated
+  mappings:
+    - fromKind: "*"
+      from: "**/*.md"
+      to: AGENTS.md
+      format: concatenated-markdown
+      order: kind-then-name
+      wrap:
+        heading: "## {{kind}} / {{stem}}"
+        separator: "\n\n"
+      provenance: header

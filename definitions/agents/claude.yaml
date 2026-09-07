@@ -1,0 +1,24 @@
+specVersion: 1
+kind: agent-definition
+id: claude
+name: Claude
+capabilities:
+  - context
+  - rules
+native:
+  roots: []
+  files:
+    - CLAUDE.md
+adapter:
+  engine: declarative
+  strategy: generated
+  mappings:
+    - fromKind: "*"
+      from: "**/*.md"
+      to: CLAUDE.md
+      format: concatenated-markdown
+      order: kind-then-name
+      wrap:
+        heading: "## {{kind}} / {{stem}}"
+        separator: "\n\n"
+      provenance: header
