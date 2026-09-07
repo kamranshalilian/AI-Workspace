@@ -3,20 +3,21 @@ import fs from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parseCli } from "./args.js";
 import { addAgent, agentStatus, createAgent, listAgents, removeAgent } from "../core/agent.js";
+import { addSource, listSources, removeSource } from "../core/source.js";
 import { doctorFrom } from "../core/doctor.js";
 import { AiwError, isAiwError } from "../core/errors.js";
 import { exportAgents } from "../core/export.js";
 import { initScope } from "../core/init.js";
 import { statusFrom } from "../core/status.js";
 import { validateFrom } from "../core/validate.js";
-import { formatAgentAdd, formatAgentCreate, formatAgentList, formatAgentRemove, formatAgentStatus, formatDoctor, formatExport, formatInit, formatStatus, formatValidate, printJson } from "./format.js";
-import { HELP_TEXT } from "./help.js";
+import { formatAgentAdd, formatAgentCreate, formatAgentList, formatAgentRemove, formatAgentStatus, formatDoctor, formatExport, formatInit, formatSourceAdd, formatSourceList, formatSourceRemove, formatStatus, formatValidate, printJson } from "./format.js";
+import { HELP_TEXT, SOURCE_HELP_TEXT } from "./help.js";
 
 export function run(argv: string[]): number {
   try {
     const cli = parseCli(argv);
     if (cli.help || (cli.command === undefined && !cli.version)) {
-      process.stdout.write(HELP_TEXT);
+      process.stdout.write(cli.command === "source" ? SOURCE_HELP_TEXT : HELP_TEXT);
       return 0;
     }
     if (cli.version) {
@@ -83,6 +84,9 @@ export function run(argv: string[]): number {
         }
         return result.ok ? 0 : 3;
       }
+      case "source": {
+        return runSource(cli);
+      }
       default: {
         throw new AiwError("USAGE", "Unknown command.");
       }
@@ -148,6 +152,47 @@ function runAgent(cli: ReturnType<typeof parseCli>): number {
         printJson(result);
       } else if (!cli.quiet) {
         process.stdout.write(formatAgentStatus(result));
+      }
+      return 0;
+    }
+  }
+}
+
+function runSource(cli: ReturnType<typeof parseCli>): number {
+  if (cli.sourceAction === undefined) {
+    throw new AiwError("USAGE", "Usage: aiw source <add|remove|list> [id].");
+  }
+  switch (cli.sourceAction) {
+    case "add": {
+      if (cli.targetId === undefined) {
+        throw new AiwError("USAGE", "Usage: aiw source add <id> --type <type> --path <path>.");
+      }
+      const result = addSource(cli.path, cli.targetId, cli.sourceType, cli.sourcePath, cli.capabilities);
+      if (cli.json) {
+        printJson(result);
+      } else if (!cli.quiet) {
+        process.stdout.write(formatSourceAdd(result));
+      }
+      return 0;
+    }
+    case "remove": {
+      if (cli.targetId === undefined) {
+        throw new AiwError("USAGE", "Usage: aiw source remove <id>.");
+      }
+      const result = removeSource(cli.path, cli.targetId);
+      if (cli.json) {
+        printJson(result);
+      } else if (!cli.quiet) {
+        process.stdout.write(formatSourceRemove(result));
+      }
+      return 0;
+    }
+    case "list": {
+      const result = listSources(cli.path);
+      if (cli.json) {
+        printJson(result);
+      } else if (!cli.quiet) {
+        process.stdout.write(formatSourceList(result));
       }
       return 0;
     }

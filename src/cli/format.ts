@@ -1,5 +1,6 @@
 import type { DoctorReport } from "../core/doctor.js";
 import type { AgentAddResult, AgentCreateResult, AgentListResult, AgentRemoveResult, AgentStatusResult } from "../core/agent.js";
+import type { SourceAddResult, SourceListResult, SourceRemoveResult } from "../core/source.js";
 import type { ExportResult } from "../core/export.js";
 import type { InitResult } from "../core/init.js";
 import type { StatusSummary } from "../core/status.js";
@@ -176,6 +177,29 @@ export function formatExport(result: ExportResult): string {
     if (agent.skippedUnmanaged.length > 0) {
       lines.push(`    skipped unmanaged: ${agent.skippedUnmanaged.join(", ")}`);
     }
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+export function formatSourceAdd(result: SourceAddResult): string {
+  return `Registered source '${result.id}' (${result.type}, ${result.path}, ${result.status})\nSource registration does not copy files, import snapshots, or execute tools.\n`;
+}
+
+export function formatSourceRemove(result: SourceRemoveResult): string {
+  return `Removed source '${result.id}' from the manifest.\nSource files were not deleted.\n`;
+}
+
+export function formatSourceList(result: SourceListResult): string {
+  if (result.sources.length === 0) {
+    return "Sources\n  (none)\n";
+  }
+  const lines = ["Sources"];
+  for (const source of result.sources) {
+    lines.push(source.id);
+    lines.push(`  type: ${source.type}`);
+    lines.push(`  path: ${source.path}`);
+    lines.push(`  capabilities: ${source.capabilities.join(",") || "none"}`);
+    lines.push(`  status: ${source.status}`);
   }
   return `${lines.join("\n")}\n`;
 }

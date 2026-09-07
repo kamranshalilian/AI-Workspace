@@ -2,6 +2,7 @@ import fs from "node:fs";
 import { isMap, parseDocument } from "yaml";
 import { AiwError } from "../core/errors.js";
 import { writeFileAtomic } from "../filesystem/io.js";
+import type { SourceCapability, SourceType } from "./types.js";
 import { parseYamlDocument } from "./parse.js";
 import { validateManifestSchema } from "./validate.js";
 
@@ -54,6 +55,57 @@ export function removeManifestAgent(manifestPath: string, id: string): void {
   assertManifest(manifestPath);
 }
 
+export function upsertManifestSource(
+  manifestPath: string,
+  id: string,
+  config: { type: SourceType; path: string; capabilities: SourceCapability[] },
+): void {
+  const text = fs.readFileSync(manifestPath, "utf8");
+  const doc = parseDocument(text, { uniqueKeys: true, schema: "core", strict: true, merge: false });
+  if (!isMap(doc.contents)) {
+    throw new AiwError("VALIDATION", "Manifest must be a mapping.");
+  }
+  if (!doc.has("sources") || doc.get("sources") === null) {
+    doc.set("sources", doc.createNode({}));
+  }
+  const sources = doc.get("sources");
+  if (!isMap(sources)) {
+    throw new AiwError("VALIDATION", "sources must be a mapping.");
+  }
+  if (sources.has(id)) {
+    throw new AiwError("CONFLICT", `Source '${id}' is already registered.`, {
+      suggestion: "Choose a different id. Existing sources are not overwritten.",
+    });
+  }
+  sources.set(
+    id,
+    doc.createNode({
+      type: config.type,
+      path: config.path,
+      capabilities: [...config.capabilities],
+    }),
+  );
+  persist(manifestPath, String(doc));
+  assertManifest(manifestPath);
+}
+
+export function removeManifestSource(manifestPath: string, id: string): void {
+  const text = fs.readFileSync(manifestPath, "utf8");
+  const doc = parseDocument(text, { uniqueKeys: true, schema: "core", strict: true, merge: false });
+  if (!isMap(doc.contents)) {
+    throw new AiwError("VALIDATION", "Manifest must be a mapping.");
+  }
+  const sources = doc.get("sources");
+  if (!isMap(sources) || !sources.has(id)) {
+    throw new AiwError("VALIDATION", `Source '${id}' is not registered.`, {
+      suggestion: "Run `aiw source list` to see registered sources.",
+    });
+  }
+  sources.delete(id);
+  persist(manifestPath, String(doc));
+  assertManifest(manifestPath);
+}
+
 function persist(manifestPath: string, raw: string): void {
   const text = raw.endsWith("\n") ? raw : `${raw}\n`;
   writeFileAtomic(manifestPath, text);
@@ -62,6 +114,6 @@ function persist(manifestPath: string, raw: string): void {
 function assertManifest(manifestPath: string): void {
   const result = validateManifestSchema(parseYamlDocument(fs.readFileSync(manifestPath, "utf8")));
   if (!result.ok) {
-    throw new AiwError("VALIDATION", "Writing the agent instance produced an invalid manifest.");
+    throw new AiwError("VALIDATION", "Writing the manifest entry produced an invalid manifest.");
   }
 }

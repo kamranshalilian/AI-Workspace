@@ -163,18 +163,26 @@ export function resolveScope(active: LoadedScope): EffectiveSnapshot {
       ? mergeChain.map((scope) => ({ scope, agents: scope.manifest.agents }))
       : [{ scope: active, agents: active.manifest.agents }];
 
-  const sources = mergeSources(sourceLayers);
+  const sources = mergeSources(sourceLayers, exclusions);
   const agents = mergeAgents(agentLayers);
   const projects = resolveProjects(active);
 
   for (const source of sources) {
     if (source.status === "unresolved") {
       issues.push({
-        severity: "error",
+        severity: "warning",
         code: "SOURCE_UNRESOLVED",
-        message: `Source '${source.id}' path does not exist: ${source.resolvedPath}.`,
+        message: `source ${source.id}: unresolved`,
         path: source.declaredPath,
         suggestion: "Create the referenced path or remove the source from the manifest.",
+      });
+    } else if (source.status === "invalid") {
+      issues.push({
+        severity: "error",
+        code: "SOURCE_INVALID",
+        message: `source ${source.id}: invalid${source.invalidReason ? ` (${source.invalidReason})` : ""}`,
+        path: source.declaredPath,
+        suggestion: "Fix the source type or path.",
       });
     }
   }

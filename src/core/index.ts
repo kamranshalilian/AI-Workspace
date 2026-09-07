@@ -4,4 +4,5 @@ export { initScope, normalizeScopeName, renderInitManifest, type InitOptions, ty
 export { statusFrom, summarizeStatus, type StatusSummary } from "./status.js";
 export { validateFrom, type ValidateReport } from "./validate.js";
 export { addAgent, agentStatus, createAgent, listAgents, removeAgent } from "./agent.js";
+export { addSource, listSources, removeSource } from "./source.js";
 export { exportAgents, type ExportResult } from "./export.js";

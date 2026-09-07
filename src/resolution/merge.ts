@@ -1,4 +1,4 @@
-import { isDirectory, isFile, pathExists } from "../filesystem/io.js";
+import { isDirectory } from "../filesystem/io.js";
 import {
   comparePosix,
   isStrictDescendant,
@@ -6,6 +6,8 @@ import {
   toPosixPath,
 } from "../filesystem/paths.js";
 import type { Manifest } from "../manifest/types.js";
+import { collectSourceInventory } from "../sources/inventory.js";
+import { classifySourceStatus } from "../sources/status.js";
 import type { LoadedScope, ResolvedAgent, ResolvedProject, ResolvedSource } from "./types.js";
 
 export function mergeResourceChain<T extends { identity: string }>(
@@ -25,6 +27,7 @@ export function mergeResourceChain<T extends { identity: string }>(
 
 export function mergeSources(
   layers: readonly { scope: LoadedScope; sources: Record<string, Manifest["sources"][string]> }[],
+  exclusions: readonly string[] = [],
 ): ResolvedSource[] {
   const map = new Map<string, ResolvedSource>();
   for (const layer of layers) {
@@ -35,9 +38,8 @@ export function mergeSources(
         continue;
       }
       const resolvedPath = resolveFromBase(layer.scope.root, source.path);
-      const exists =
-        source.type === "file" ? isFile(resolvedPath) : pathExists(resolvedPath);
-      map.set(id, {
+      const classified = classifySourceStatus(source.type, resolvedPath);
+      const resolved: ResolvedSource = {
         id,
         type: source.type,
         declaredPath: source.path,
@@ -45,8 +47,16 @@ export function mergeSources(
         originRoot: layer.scope.root,
         originName: layer.scope.manifest.name,
         capabilities: [...source.capabilities].sort(),
-        status: exists ? "ok" : "unresolved",
-      });
+        include: [...source.include],
+        exclude: [...source.exclude],
+        status: classified.status,
+        invalidReason: classified.invalidReason,
+        inventory: [],
+      };
+      if (classified.status === "resolved" && resolved.capabilities.includes("index")) {
+        resolved.inventory = collectSourceInventory(resolved, exclusions);
+      }
+      map.set(id, resolved);
     }
   }
   return [...map.values()].sort((a, b) => comparePosix(a.id, b.id));

@@ -2,8 +2,9 @@ import { parseArgs } from "node:util";
 import { AiwError } from "../core/errors.js";
 import type { ScopeKind } from "../manifest/types.js";
 
-export type CommandName = "init" | "status" | "validate" | "doctor" | "agent" | "export";
+export type CommandName = "init" | "status" | "validate" | "doctor" | "agent" | "export" | "source";
 export type AgentAction = "add" | "remove" | "list" | "status" | "create";
+export type SourceAction = "add" | "remove" | "list";
 
 export interface ParsedCli {
   command: CommandName | undefined;
@@ -17,10 +18,14 @@ export interface ParsedCli {
   name: string | undefined;
   force: boolean;
   agentAction: AgentAction | undefined;
+  sourceAction: SourceAction | undefined;
   targetId: string | undefined;
+  sourceType: string | undefined;
+  sourcePath: string | undefined;
+  capabilities: string | undefined;
 }
 
-const LATER_COMMANDS = new Set(["adapter", "source", "import", "sync", "project", "workspace"]);
+const LATER_COMMANDS = new Set(["adapter", "import", "sync", "project", "workspace"]);
 
 export function parseCli(argv: string[]): ParsedCli {
   let parsed;
@@ -41,6 +46,8 @@ export function parseCli(argv: string[]): ParsedCli {
         force: { type: "boolean", default: false },
         all: { type: "boolean", default: false },
         agent: { type: "string" },
+        type: { type: "string" },
+        capabilities: { type: "string" },
       },
     });
   } catch (error) {
@@ -60,8 +67,8 @@ export function parseCli(argv: string[]): ParsedCli {
   const commandRaw = positionals[0];
 
   if (commandRaw !== undefined && LATER_COMMANDS.has(commandRaw)) {
-    throw new AiwError("UNSUPPORTED", `Command '${commandRaw}' is not implemented in Phase 3.`, {
-      suggestion: "Phase 3 supports: init, status, validate, doctor, agent, export.",
+    throw new AiwError("UNSUPPORTED", `Command '${commandRaw}' is not implemented in Phase 4.`, {
+      suggestion: "Phase 4 supports: init, status, validate, doctor, agent, export, source.",
     });
   }
 
@@ -76,7 +83,12 @@ export function parseCli(argv: string[]): ParsedCli {
   }
 
   let agentAction: AgentAction | undefined;
+  let sourceAction: SourceAction | undefined;
   let targetId: string | undefined = parsed.values.agent;
+  let sourceType = parsed.values.type;
+  let sourcePath: string | undefined;
+  let capabilities = parsed.values.capabilities;
+  let startDir = parsed.values.path ?? process.cwd();
 
   if (command === "agent") {
     const actionRaw = positionals[1];
@@ -98,6 +110,54 @@ export function parseCli(argv: string[]): ParsedCli {
       targetId = id;
     } else if (positionals.length > 2) {
       throw new AiwError("USAGE", `Unexpected arguments: ${positionals.slice(2).join(" ")}.`);
+    }
+  } else if (command === "source") {
+    const actionRaw = positionals[1];
+    if (parsed.values.help === true && actionRaw === undefined) {
+      sourceAction = undefined;
+    } else {
+      if (actionRaw === undefined) {
+        throw new AiwError("USAGE", "Usage: aiw source <add|remove|list> [id].");
+      }
+      if (!isSourceAction(actionRaw)) {
+        throw new AiwError("USAGE", `Unknown source action '${actionRaw}'.`);
+      }
+      sourceAction = actionRaw;
+      if (actionRaw === "add") {
+        const id = positionals[2];
+        if (parsed.values.help === true) {
+          targetId = id;
+          sourcePath = parsed.values.path;
+          startDir = process.cwd();
+        } else {
+          if (id === undefined || id.trim() === "") {
+            throw new AiwError("USAGE", "Usage: aiw source add <id> --type <type> --path <path>.");
+          }
+          if (positionals.length > 3) {
+            throw new AiwError("USAGE", `Unexpected arguments: ${positionals.slice(3).join(" ")}.`);
+          }
+          targetId = id;
+          sourcePath = parsed.values.path;
+          startDir = process.cwd();
+          if (sourceType === undefined || sourceType.trim() === "") {
+            throw new AiwError("USAGE", "Usage: aiw source add <id> --type <type> --path <path>.");
+          }
+          if (sourcePath === undefined || sourcePath.trim() === "") {
+            throw new AiwError("USAGE", "Usage: aiw source add <id> --type <type> --path <path>.");
+          }
+        }
+      } else if (actionRaw === "remove") {
+        const id = positionals[2];
+        if (id === undefined || id.trim() === "") {
+          throw new AiwError("USAGE", "Usage: aiw source remove <id>.");
+        }
+        if (positionals.length > 3) {
+          throw new AiwError("USAGE", `Unexpected arguments: ${positionals.slice(3).join(" ")}.`);
+        }
+        targetId = id;
+      } else if (positionals.length > 2) {
+        throw new AiwError("USAGE", `Unexpected arguments: ${positionals.slice(2).join(" ")}.`);
+      }
     }
   } else if (command === "export") {
     if (positionals.length > 1) {
@@ -122,6 +182,22 @@ export function parseCli(argv: string[]): ParsedCli {
     throw new AiwError("USAGE", "--agent is only valid for `aiw export`.");
   }
 
+  if (command !== "source") {
+    if (sourceType !== undefined) {
+      throw new AiwError("USAGE", "--type is only valid for `aiw source add`.");
+    }
+    if (capabilities !== undefined) {
+      throw new AiwError("USAGE", "--capabilities is only valid for `aiw source add`.");
+    }
+  } else if (sourceAction !== "add") {
+    if (sourceType !== undefined) {
+      throw new AiwError("USAGE", "--type is only valid for `aiw source add`.");
+    }
+    if (capabilities !== undefined) {
+      throw new AiwError("USAGE", "--capabilities is only valid for `aiw source add`.");
+    }
+  }
+
   return {
     command,
     help: parsed.values.help === true,
@@ -129,12 +205,16 @@ export function parseCli(argv: string[]): ParsedCli {
     json: parsed.values.json === true,
     quiet: parsed.values.quiet === true,
     verbose: parsed.values.verbose === true,
-    path: parsed.values.path ?? process.cwd(),
+    path: startDir,
     kind: kindRaw,
     name: parsed.values.name,
     force: parsed.values.force === true,
     agentAction,
+    sourceAction,
     targetId,
+    sourceType,
+    sourcePath,
+    capabilities,
   };
 }
 
@@ -145,7 +225,8 @@ function isCommand(value: string): value is CommandName {
     value === "validate" ||
     value === "doctor" ||
     value === "agent" ||
-    value === "export"
+    value === "export" ||
+    value === "source"
   );
 }
 
@@ -157,4 +238,8 @@ function isAgentAction(value: string): value is AgentAction {
     value === "status" ||
     value === "create"
   );
+}
+
+function isSourceAction(value: string): value is SourceAction {
+  return value === "add" || value === "remove" || value === "list";
 }

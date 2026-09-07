@@ -27,6 +27,13 @@ export interface ResolvedResource {
   hash: string;
 }
 
+export type SourceResolutionStatus = "resolved" | "unresolved" | "invalid";
+
+export interface SourceInventoryEntry {
+  relativePath: string;
+  identity: string;
+}
+
 export interface ResolvedSource {
   id: string;
   type: string;
@@ -35,7 +42,11 @@ export interface ResolvedSource {
   originRoot: string;
   originName: string;
   capabilities: string[];
-  status: "ok" | "unresolved";
+  include: string[];
+  exclude: string[];
+  status: SourceResolutionStatus;
+  invalidReason?: string;
+  inventory: SourceInventoryEntry[];
 }
 
 export interface ResolvedAgent {

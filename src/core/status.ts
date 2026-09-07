@@ -23,7 +23,7 @@ export interface StatusSummary {
     byKind: Record<string, { total: number; inherited: number; local: number }>;
     identities: string[];
   };
-  sources: { id: string; type: string; status: string; origin: string }[];
+  sources: { id: string; type: string; status: string; origin: string; capabilities: string[]; path: string }[];
   agents: { id: string; enabled: boolean; definition: string; origin: string }[];
   validation: {
     errors: number;
@@ -85,6 +85,8 @@ export function summarizeStatus(snapshot: EffectiveSnapshot): StatusSummary {
       type: source.type,
       status: source.status,
       origin: source.originName,
+      capabilities: [...source.capabilities],
+      path: source.declaredPath,
     })),
     agents: snapshot.agents.map((agent) => ({
       id: agent.id,

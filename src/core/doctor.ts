@@ -40,6 +40,17 @@ export function doctorFrom(startDir: string): DoctorReport {
     }
     issues.push(...skipped);
 
+    for (const source of snapshot.sources) {
+      if (source.status === "resolved") {
+        issues.push({
+          severity: "info",
+          code: "SOURCE",
+          message: `source ${source.id}: resolved`,
+          path: source.declaredPath,
+        });
+      }
+    }
+
     addGitIgnoreSuggestions(discovered.root, issues);
     addGitAttributesSuggestion(discovered.root, issues);
   } catch (error) {

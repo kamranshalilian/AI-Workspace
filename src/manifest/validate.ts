@@ -8,6 +8,7 @@ import {
   NAME_PATTERN,
   AGENT_ID_PATTERN,
   RESERVED_AI_NAMES,
+  RESERVED_SOURCE_TYPES,
   SCOPE_KINDS,
   SOURCE_CAPABILITIES,
   SOURCE_TYPES,
@@ -205,6 +206,13 @@ function parseSource(raw: unknown, path: string, issues: ManifestIssue[]): Sourc
     }
   }
   const type = raw["type"];
+  if (typeof type === "string" && (RESERVED_SOURCE_TYPES as readonly string[]).includes(type)) {
+    issues.push({
+      path: `${path}.type`,
+      message: `Source type '${type}' is reserved and not available.`,
+    });
+    return undefined;
+  }
   if (!isSourceType(type)) {
     issues.push({
       path: `${path}.type`,
@@ -214,6 +222,10 @@ function parseSource(raw: unknown, path: string, issues: ManifestIssue[]): Sourc
   }
   if (typeof raw["path"] !== "string" || raw["path"].trim() === "") {
     issues.push({ path: `${path}.path`, message: "Source path is required." });
+    return undefined;
+  }
+  if (raw["path"].includes("\0")) {
+    issues.push({ path: `${path}.path`, message: "Source path must not contain null bytes." });
     return undefined;
   }
   const capabilitiesRaw = raw["capabilities"];
@@ -238,7 +250,9 @@ function parseSource(raw: unknown, path: string, issues: ManifestIssue[]): Sourc
   }
   const include =
     raw["include"] === undefined
-      ? ["**/*"]
+      ? type === "file"
+        ? []
+        : ["**/*"]
       : parseStringArray(raw["include"], `${path}.include`, issues);
   const exclude = parseStringArray(raw["exclude"], `${path}.exclude`, issues);
   return {

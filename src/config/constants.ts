@@ -67,6 +67,7 @@ export const ADAPTER_STRATEGIES = [
   "junction",
 ] as const;
 export const SOURCE_TYPES = ["directory", "file", "repository", "generated"] as const;
+export const RESERVED_SOURCE_TYPES = ["command", "api", "mcp", "database", "remote"] as const;
 export const SOURCE_CAPABILITIES = [
   "read",
   "index",
@@ -76,6 +77,7 @@ export const SOURCE_CAPABILITIES = [
   "export",
   "sync",
 ] as const;
+export const OPERATIONAL_SOURCE_CAPABILITIES = ["read", "index"] as const;
 
 export const AGENT_CAPABILITIES = ["context", "rules", "skills"] as const;
 export const FORMAT_ENGINE_IDS = [
