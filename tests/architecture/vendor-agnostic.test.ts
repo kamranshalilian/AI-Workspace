@@ -49,6 +49,19 @@ test("core modules do not contain vendor-specific branching or names", () => {
   assert.deepEqual(hits, []);
 });
 
+test("no vendor-named or custom-agent TypeScript implementations exist", () => {
+  const srcRoot = path.join(repoRoot(), "src");
+  for (const name of ["cursor", "claude", "codex", "graphify", "test-agent", "my-agent"]) {
+    assert.equal(fs.existsSync(path.join(srcRoot, "adapters", `${name}.ts`)), false);
+    assert.equal(fs.existsSync(path.join(srcRoot, "agents", `${name}.ts`)), false);
+  }
+});
+
+test("bundled definition locator does not depend on process.cwd()", () => {
+  const text = fs.readFileSync(path.join(repoRoot(), "src", "agents", "index.ts"), "utf8");
+  assert.equal(text.includes("process.cwd()"), false);
+});
+
 function walkTs(dir: string): string[] {
   if (!fs.existsSync(dir)) {
     return [];

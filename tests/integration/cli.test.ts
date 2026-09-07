@@ -128,12 +128,6 @@ test("CLI exits 4 when no .ai is present", () => {
 test("later-phase commands are rejected", () => {
   const result = aiw(["source", "add", "docs"]);
   assert.equal(result.status, 2);
-  assert.match(result.stderr, /Phase 2/);
-});
-
-test("agent create is not implemented", () => {
-  const result = aiw(["agent", "create", "demo"]);
-  assert.equal(result.status, 2);
   assert.match(result.stderr, /Phase 3/);
 });
 
