@@ -51,3 +51,4 @@ export function formatIssues(
 export type { Manifest, ManifestIssue, SchemaValidationResult } from "./types.js";
 export { parseYamlDocument } from "./parse.js";
 export { validateManifestSchema } from "./validate.js";
+export { removeManifestAgent, upsertManifestAgent } from "./write.js";

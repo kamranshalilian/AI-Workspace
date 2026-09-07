@@ -5,6 +5,7 @@ import fs from "node:fs";
 import { AiwError } from "./errors.js";
 import { loadScope, resolveScope } from "../resolution/index.js";
 import type { EffectiveSnapshot, SnapshotIssue } from "../resolution/types.js";
+import { definitionSearchDirs, resolveDefinition } from "../agents/index.js";
 
 export interface ValidateReport {
   specVersion: 1;
@@ -42,6 +43,7 @@ export function validateFrom(startDir: string): ValidateReport {
   try {
     const snapshot = resolveScope(loadScope(discovered.root));
     const issues = snapshot.issues.filter((issue) => issue.severity === "error" && issue.code !== "SOURCE_UNRESOLVED");
+    issues.push(...definitionIssues(snapshot));
     return {
       specVersion: SPEC_VERSION,
       ok: issues.length === 0,
@@ -72,4 +74,22 @@ export function validateFrom(startDir: string): ValidateReport {
 
 export function snapshotIssuesAsErrors(snapshot: EffectiveSnapshot): SnapshotIssue[] {
   return snapshot.issues.filter((issue) => issue.severity === "error");
+}
+
+function definitionIssues(snapshot: EffectiveSnapshot): SnapshotIssue[] {
+  const issues: SnapshotIssue[] = [];
+  const dirs = definitionSearchDirs(snapshot);
+  for (const agent of snapshot.agents) {
+    try {
+      resolveDefinition(agent.definitionId, dirs);
+    } catch (error) {
+      issues.push({
+        severity: "error",
+        code: "DEFINITION",
+        message: error instanceof Error ? error.message : String(error),
+        path: agent.id,
+      });
+    }
+  }
+  return issues;
 }

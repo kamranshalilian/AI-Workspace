@@ -2,12 +2,14 @@
 import fs from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parseCli } from "./args.js";
+import { addAgent, agentStatus, listAgents, removeAgent } from "../core/agent.js";
 import { doctorFrom } from "../core/doctor.js";
 import { AiwError, isAiwError } from "../core/errors.js";
+import { exportAgents } from "../core/export.js";
 import { initScope } from "../core/init.js";
 import { statusFrom } from "../core/status.js";
 import { validateFrom } from "../core/validate.js";
-import { formatDoctor, formatInit, formatStatus, formatValidate, printJson } from "./format.js";
+import { formatAgentAdd, formatAgentList, formatAgentRemove, formatAgentStatus, formatDoctor, formatExport, formatInit, formatStatus, formatValidate, printJson } from "./format.js";
 import { HELP_TEXT } from "./help.js";
 
 export function run(argv: string[]): number {
@@ -69,9 +71,74 @@ export function run(argv: string[]): number {
         }
         return report.ok ? 0 : 2;
       }
+      case "agent": {
+        return runAgent(cli);
+      }
+      case "export": {
+        const result = exportAgents(cli.path, cli.targetId);
+        if (cli.json) {
+          printJson(result);
+        } else if (!cli.quiet) {
+          process.stdout.write(formatExport(result));
+        }
+        return result.ok ? 0 : 3;
+      }
+      default: {
+        throw new AiwError("USAGE", "Unknown command.");
+      }
     }
   } catch (error) {
     return handleError(error, argv.includes("--json"));
+  }
+}
+
+function runAgent(cli: ReturnType<typeof parseCli>): number {
+  if (cli.agentAction === undefined) {
+    throw new AiwError("USAGE", "Usage: aiw agent <add|remove|list|status> [id].");
+  }
+  switch (cli.agentAction) {
+    case "add": {
+      if (cli.targetId === undefined) {
+        throw new AiwError("USAGE", "Usage: aiw agent add <id>.");
+      }
+      const result = addAgent(cli.path, cli.targetId);
+      if (cli.json) {
+        printJson(result);
+      } else if (!cli.quiet) {
+        process.stdout.write(formatAgentAdd(result));
+      }
+      return 0;
+    }
+    case "remove": {
+      if (cli.targetId === undefined) {
+        throw new AiwError("USAGE", "Usage: aiw agent remove <id>.");
+      }
+      const result = removeAgent(cli.path, cli.targetId);
+      if (cli.json) {
+        printJson(result);
+      } else if (!cli.quiet) {
+        process.stdout.write(formatAgentRemove(result));
+      }
+      return 0;
+    }
+    case "list": {
+      const result = listAgents(cli.path);
+      if (cli.json) {
+        printJson(result);
+      } else if (!cli.quiet) {
+        process.stdout.write(formatAgentList(result));
+      }
+      return 0;
+    }
+    case "status": {
+      const result = agentStatus(cli.path);
+      if (cli.json) {
+        printJson(result);
+      } else if (!cli.quiet) {
+        process.stdout.write(formatAgentStatus(result));
+      }
+      return 0;
+    }
   }
 }
 

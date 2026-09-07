@@ -1,0 +1,67 @@
+import fs from "node:fs";
+import { isMap, parseDocument } from "yaml";
+import { AiwError } from "../core/errors.js";
+import { writeFileAtomic } from "../filesystem/io.js";
+import { parseYamlDocument } from "./parse.js";
+import { validateManifestSchema } from "./validate.js";
+
+export function upsertManifestAgent(
+  manifestPath: string,
+  id: string,
+  definitionId: string,
+): { created: boolean } {
+  const text = fs.readFileSync(manifestPath, "utf8");
+  const doc = parseDocument(text, { uniqueKeys: true, schema: "core", strict: true, merge: false });
+  if (!isMap(doc.contents)) {
+    throw new AiwError("VALIDATION", "Manifest must be a mapping.");
+  }
+  if (!doc.has("agents") || doc.get("agents") === null) {
+    doc.set("agents", doc.createNode({}));
+  }
+  const agents = doc.get("agents");
+  if (!isMap(agents)) {
+    throw new AiwError("VALIDATION", "agents must be a mapping.");
+  }
+  if (agents.has(id)) {
+    return { created: false };
+  }
+  agents.set(
+    id,
+    doc.createNode({
+      enabled: true,
+      definition: definitionId,
+    }),
+  );
+  persist(manifestPath, String(doc));
+  assertManifest(manifestPath);
+  return { created: true };
+}
+
+export function removeManifestAgent(manifestPath: string, id: string): void {
+  const text = fs.readFileSync(manifestPath, "utf8");
+  const doc = parseDocument(text, { uniqueKeys: true, schema: "core", strict: true, merge: false });
+  if (!isMap(doc.contents)) {
+    throw new AiwError("VALIDATION", "Manifest must be a mapping.");
+  }
+  const agents = doc.get("agents");
+  if (!isMap(agents) || !agents.has(id)) {
+    throw new AiwError("VALIDATION", `Agent '${id}' is not registered.`, {
+      suggestion: "Run `aiw agent list` to see registered agents.",
+    });
+  }
+  agents.delete(id);
+  persist(manifestPath, String(doc));
+  assertManifest(manifestPath);
+}
+
+function persist(manifestPath: string, raw: string): void {
+  const text = raw.endsWith("\n") ? raw : `${raw}\n`;
+  writeFileAtomic(manifestPath, text);
+}
+
+function assertManifest(manifestPath: string): void {
+  const result = validateManifestSchema(parseYamlDocument(fs.readFileSync(manifestPath, "utf8")));
+  if (!result.ok) {
+    throw new AiwError("VALIDATION", "Writing the agent instance produced an invalid manifest.");
+  }
+}

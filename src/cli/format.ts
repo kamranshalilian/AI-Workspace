@@ -1,4 +1,6 @@
 import type { DoctorReport } from "../core/doctor.js";
+import type { AgentAddResult, AgentListResult, AgentRemoveResult, AgentStatusResult } from "../core/agent.js";
+import type { ExportResult } from "../core/export.js";
 import type { InitResult } from "../core/init.js";
 import type { StatusSummary } from "../core/status.js";
 import type { ValidateReport } from "../core/validate.js";
@@ -87,6 +89,83 @@ export function formatDoctor(report: DoctorReport): string {
     return `${header}No issues.\n`;
   }
   return `${header}${formatIssueList(report.issues)}`;
+}
+
+export function formatAgentAdd(result: AgentAddResult): string {
+  const verb = result.created ? "Registered" : "Already registered";
+  return `${verb} agent '${result.id}' (definition: ${result.definitionId})\n`;
+}
+
+export function formatAgentRemove(result: AgentRemoveResult): string {
+  const lines = [`Removed agent '${result.id}' from the manifest.`];
+  if (result.leftoverGenerated.length > 0) {
+    lines.push("Generated native files were not deleted:");
+    for (const file of result.leftoverGenerated) {
+      lines.push(`  ${file}`);
+    }
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+export function formatAgentList(result: AgentListResult): string {
+  const lines = ["Available definitions"];
+  if (result.available.length === 0) {
+    lines.push("  (none)");
+  } else {
+    for (const item of result.available) {
+      const caps = item.capabilities.length === 0 ? "none" : item.capabilities.join(", ");
+      lines.push(`  ${item.id}: ${item.name} [${item.source}] capabilities: ${caps}`);
+    }
+  }
+  lines.push("Registered agents");
+  if (result.enabled.length === 0) {
+    lines.push("  (none)");
+  } else {
+    for (const item of result.enabled) {
+      const state = item.enabled ? "enabled" : "disabled";
+      const valid = item.valid ? "valid" : "invalid";
+      lines.push(`  ${item.id}: ${state}, ${valid} (definition: ${item.definition})`);
+    }
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+export function formatAgentStatus(result: AgentStatusResult): string {
+  const lines = ["Agent status"];
+  if (result.agents.length === 0) {
+    lines.push("  (none)");
+    return `${lines.join("\n")}\n`;
+  }
+  for (const agent of result.agents) {
+    const state = agent.enabled ? "enabled" : "disabled";
+    const valid = agent.valid ? "valid" : "invalid";
+    lines.push(`  ${agent.id}: ${state}, ${valid}, strategy=${agent.strategy}`);
+    if (agent.outputs.length === 0) {
+      lines.push("    outputs: (none)");
+    } else {
+      for (const output of agent.outputs) {
+        lines.push(`    ${output.path}: ${output.state}`);
+      }
+    }
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+export function formatExport(result: ExportResult): string {
+  const lines = [result.ok ? "Export: ok" : "Export: completed with conflicts"];
+  if (result.agents.length === 0) {
+    lines.push("  (no agents)");
+    return `${lines.join("\n")}\n`;
+  }
+  for (const agent of result.agents) {
+    lines.push(`  ${agent.id}`);
+    lines.push(`    written: ${agent.written.join(", ") || "(none)"}`);
+    lines.push(`    unchanged: ${agent.unchanged.join(", ") || "(none)"}`);
+    if (agent.skippedUnmanaged.length > 0) {
+      lines.push(`    skipped unmanaged: ${agent.skippedUnmanaged.join(", ")}`);
+    }
+  }
+  return `${lines.join("\n")}\n`;
 }
 
 function formatIssueList(issues: readonly SnapshotIssue[]): string {

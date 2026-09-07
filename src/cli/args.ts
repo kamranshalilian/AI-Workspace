@@ -2,7 +2,8 @@ import { parseArgs } from "node:util";
 import { AiwError } from "../core/errors.js";
 import type { ScopeKind } from "../manifest/types.js";
 
-export type CommandName = "init" | "status" | "validate" | "doctor";
+export type CommandName = "init" | "status" | "validate" | "doctor" | "agent" | "export";
+export type AgentAction = "add" | "remove" | "list" | "status";
 
 export interface ParsedCli {
   command: CommandName | undefined;
@@ -15,18 +16,11 @@ export interface ParsedCli {
   kind: ScopeKind;
   name: string | undefined;
   force: boolean;
+  agentAction: AgentAction | undefined;
+  targetId: string | undefined;
 }
 
-const PHASE2_COMMANDS = new Set([
-  "agent",
-  "adapter",
-  "source",
-  "import",
-  "export",
-  "sync",
-  "project",
-  "workspace",
-]);
+const LATER_COMMANDS = new Set(["adapter", "source", "import", "sync", "project", "workspace"]);
 
 export function parseCli(argv: string[]): ParsedCli {
   let parsed;
@@ -46,6 +40,7 @@ export function parseCli(argv: string[]): ParsedCli {
         name: { type: "string" },
         force: { type: "boolean", default: false },
         all: { type: "boolean", default: false },
+        agent: { type: "string" },
       },
     });
   } catch (error) {
@@ -64,14 +59,10 @@ export function parseCli(argv: string[]): ParsedCli {
   const positionals = parsed.positionals;
   const commandRaw = positionals[0];
 
-  if (commandRaw !== undefined && PHASE2_COMMANDS.has(commandRaw)) {
-    throw new AiwError("UNSUPPORTED", `Command '${commandRaw}' is not implemented in Phase 1.`, {
-      suggestion: "Phase 1 supports: init, status, validate, doctor.",
+  if (commandRaw !== undefined && LATER_COMMANDS.has(commandRaw)) {
+    throw new AiwError("UNSUPPORTED", `Command '${commandRaw}' is not implemented in Phase 2.`, {
+      suggestion: "Phase 2 supports: init, status, validate, doctor, agent, export.",
     });
-  }
-
-  if (positionals.length > 1) {
-    throw new AiwError("USAGE", `Unexpected arguments: ${positionals.slice(1).join(" ")}.`);
   }
 
   let command: CommandName | undefined;
@@ -82,6 +73,43 @@ export function parseCli(argv: string[]): ParsedCli {
       });
     }
     command = commandRaw;
+  }
+
+  let agentAction: AgentAction | undefined;
+  let targetId: string | undefined = parsed.values.agent;
+
+  if (command === "agent") {
+    const actionRaw = positionals[1];
+    if (actionRaw === "create") {
+      throw new AiwError("UNSUPPORTED", "Command 'agent create' is not implemented until Phase 3.", {
+        suggestion: "Add a YAML file under .ai/agents/ and run `aiw agent add <id>`.",
+      });
+    }
+    if (actionRaw === undefined) {
+      throw new AiwError("USAGE", "Usage: aiw agent <add|remove|list|status> [id].");
+    }
+    if (!isAgentAction(actionRaw)) {
+      throw new AiwError("USAGE", `Unknown agent action '${actionRaw}'.`);
+    }
+    agentAction = actionRaw;
+    if (actionRaw === "add" || actionRaw === "remove") {
+      const id = positionals[2];
+      if (id === undefined || id.trim() === "") {
+        throw new AiwError("USAGE", `Usage: aiw agent ${actionRaw} <id>.`);
+      }
+      if (positionals.length > 3) {
+        throw new AiwError("USAGE", `Unexpected arguments: ${positionals.slice(3).join(" ")}.`);
+      }
+      targetId = id;
+    } else if (positionals.length > 2) {
+      throw new AiwError("USAGE", `Unexpected arguments: ${positionals.slice(2).join(" ")}.`);
+    }
+  } else if (command === "export") {
+    if (positionals.length > 1) {
+      throw new AiwError("USAGE", `Unexpected arguments: ${positionals.slice(1).join(" ")}.`);
+    }
+  } else if (positionals.length > 1) {
+    throw new AiwError("USAGE", `Unexpected arguments: ${positionals.slice(1).join(" ")}.`);
   }
 
   const kindRaw = parsed.values.kind ?? "project";
@@ -95,6 +123,10 @@ export function parseCli(argv: string[]): ParsedCli {
     }
   }
 
+  if (command !== "export" && parsed.values.agent !== undefined) {
+    throw new AiwError("USAGE", "--agent is only valid for `aiw export`.");
+  }
+
   return {
     command,
     help: parsed.values.help === true,
@@ -106,9 +138,22 @@ export function parseCli(argv: string[]): ParsedCli {
     kind: kindRaw,
     name: parsed.values.name,
     force: parsed.values.force === true,
+    agentAction,
+    targetId,
   };
 }
 
 function isCommand(value: string): value is CommandName {
-  return value === "init" || value === "status" || value === "validate" || value === "doctor";
+  return (
+    value === "init" ||
+    value === "status" ||
+    value === "validate" ||
+    value === "doctor" ||
+    value === "agent" ||
+    value === "export"
+  );
+}
+
+function isAgentAction(value: string): value is AgentAction {
+  return value === "add" || value === "remove" || value === "list" || value === "status";
 }
