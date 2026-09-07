@@ -5,6 +5,10 @@ export const MANIFEST_FILE_NAME = "manifest.yaml";
 
 export const NAME_PATTERN = /^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$/;
 
+/** Portable Agent Definition id. Validated before any filesystem join. */
+export const AGENT_ID_PATTERN = /^[a-z0-9][a-z0-9._-]*$/;
+export const AGENT_ID_MAX_LENGTH = 64;
+
 export const DEFAULT_CONTEXT_INCLUDE = [
   "context/**",
   "rules/**",

@@ -9,8 +9,18 @@ import { parseAgentDefinition } from "./parse.js";
 import type { AgentDefinition } from "./types.js";
 
 export function bundledDefinitionsDir(): string {
-  const start = fileURLToPath(new URL(".", import.meta.url));
-  let current = start;
+  const moduleDir = fileURLToPath(new URL(".", import.meta.url));
+  const candidates = [
+    path.resolve(moduleDir, "../definitions/agents"),
+    path.resolve(moduleDir, "../../definitions/agents"),
+    path.resolve(moduleDir, "../../../definitions/agents"),
+  ];
+  for (const candidate of candidates) {
+    if (isDirectory(candidate) && hasYaml(candidate)) {
+      return candidate;
+    }
+  }
+  let current = moduleDir;
   while (true) {
     const candidate = path.join(current, "definitions", "agents");
     if (isDirectory(candidate) && hasYaml(candidate)) {

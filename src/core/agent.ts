@@ -1,11 +1,25 @@
-import { SPEC_VERSION } from "../config/constants.js";
-import { definitionSearchDirs, listBundledDefinitions, listDefinitions, resolveDefinition } from "../agents/index.js";
+import path from "node:path";
+import { AI_DIR_NAME, SPEC_VERSION } from "../config/constants.js";
+import { definitionSearchDirs, listDefinitions, resolveDefinition } from "../agents/index.js";
+import { agentDefinitionFile, assertValidAgentId } from "../agents/ids.js";
+import { parseAgentDefinition } from "../agents/parse.js";
+import { renderAgentDefinitionStub } from "../agents/stub.js";
 import type { AgentDefinition } from "../agents/types.js";
 import { leftoverGenerated, planArtifacts } from "../adapters/engine.js";
 import { discoverScope } from "../filesystem/discovery.js";
+import { isFile, writeFileAtomic } from "../filesystem/io.js";
+import { isInsideOrEqual, relativePosix } from "../filesystem/paths.js";
 import { removeManifestAgent, upsertManifestAgent } from "../manifest/write.js";
 import { loadScope, resolveFrom, resolveScope } from "../resolution/index.js";
 import { AiwError } from "./errors.js";
+
+export interface AgentCreateResult {
+  specVersion: 1;
+  command: "agent-create";
+  ok: true;
+  id: string;
+  path: string;
+}
 
 export interface AgentAddResult {
   specVersion: 1;
@@ -43,6 +57,43 @@ export interface AgentStatusResult {
     strategy: string;
     outputs: { path: string; state: string }[];
   }[];
+}
+
+export function createAgent(startDir: string, id: string): AgentCreateResult {
+  const discovered = discoverScope(startDir);
+  if (discovered === undefined) {
+    throw new AiwError("NOT_FOUND", `No .ai/manifest.yaml found from ${startDir}.`, {
+      suggestion: "Run `aiw init` in the project directory.",
+    });
+  }
+  const scope = loadScope(discovered.root);
+  const safeId = assertValidAgentId(id);
+  const agentsDir = path.join(scope.root, AI_DIR_NAME, "agents");
+  const dest = agentDefinitionFile(agentsDir, safeId);
+  if (isFile(dest)) {
+    throw new AiwError("CONFLICT", `Agent definition already exists: ${relativePosix(scope.root, dest)}`, {
+      suggestion: "Choose a different id. Existing definitions are not overwritten.",
+    });
+  }
+  const yaml = renderAgentDefinitionStub(safeId);
+  const parsed = parseAgentDefinition(yaml, dest);
+  if (!parsed.ok) {
+    throw new AiwError(
+      "VALIDATION",
+      `Invalid generated definition: ${parsed.issues.map((issue) => issue.message).join("; ")}`,
+    );
+  }
+  writeFileAtomic(dest, yaml);
+  if (!isInsideOrEqual(agentsDir, dest)) {
+    throw new AiwError("IO", "Refusing to write an Agent Definition outside .ai/agents/.");
+  }
+  return {
+    specVersion: SPEC_VERSION,
+    command: "agent-create",
+    ok: true,
+    id: parsed.definition.id,
+    path: relativePosix(scope.root, dest),
+  };
 }
 
 export function addAgent(startDir: string, id: string): AgentAddResult {
@@ -93,12 +144,11 @@ export function listAgents(startDir: string): AgentListResult {
     });
   }
   const snapshot = resolveScope(loadScope(discovered.root));
-  const bundledIds = new Set(listBundledDefinitions().map((item) => item.id));
   const available = listDefinitions(definitionSearchDirs(snapshot)).map((definition) => ({
     id: definition.id,
     name: definition.name,
     capabilities: [...definition.capabilities],
-    source: bundledIds.has(definition.id) ? ("bundled" as const) : ("local" as const),
+    source: definitionOrigin(definition, snapshot),
     valid: true as const,
   }));
   const enabled = snapshot.agents.map((agent) => {
@@ -155,4 +205,14 @@ export function agentStatus(startDir: string): AgentStatusResult {
     command: "agent-status",
     agents,
   };
+}
+
+function definitionOrigin(definition: AgentDefinition, snapshot: ReturnType<typeof resolveFrom>): "bundled" | "local" {
+  for (const entry of snapshot.chain) {
+    const agentsDir = path.join(entry.root, AI_DIR_NAME, "agents");
+    if (isInsideOrEqual(agentsDir, definition.sourcePath)) {
+      return "local";
+    }
+  }
+  return "bundled";
 }

@@ -8,9 +8,11 @@ Commands:
   status           Show the effective context
   validate         Validate the manifest and inheritance graph
   doctor           Diagnose problems and suggest remediations
-  agent add <id>   Register a declarative agent definition
+  agent create <id>
+                   Write a local Agent Definition stub
+  agent add <id>   Register a definition in the manifest
   agent remove <id>
-  agent list       List bundled and registered agents
+  agent list       List bundled and local definitions
   agent status     Show output state for registered agents
   export           Write native files for enabled agents
 
@@ -20,7 +22,7 @@ Global options:
   --quiet        Errors only
   --verbose      Extra diagnostics on stderr
   --help         Show help
-  --version      Show version
+  --version      Show package version
 
 init options:
   --kind <kind>  project (default) or workspace
@@ -30,5 +32,9 @@ init options:
 export options:
   --agent <id>   Export a single registered agent
 
-agent add registers a definition in the manifest only. Run aiw export to write native files.
+Install globally with npm install -g ai-workspace. Workspace state stays in .ai/.
+
+create = create definition
+add    = enable/register
+export = materialize native output
 `;

@@ -1,5 +1,5 @@
 import type { DoctorReport } from "../core/doctor.js";
-import type { AgentAddResult, AgentListResult, AgentRemoveResult, AgentStatusResult } from "../core/agent.js";
+import type { AgentAddResult, AgentCreateResult, AgentListResult, AgentRemoveResult, AgentStatusResult } from "../core/agent.js";
 import type { ExportResult } from "../core/export.js";
 import type { InitResult } from "../core/init.js";
 import type { StatusSummary } from "../core/status.js";
@@ -91,6 +91,10 @@ export function formatDoctor(report: DoctorReport): string {
   return `${header}${formatIssueList(report.issues)}`;
 }
 
+export function formatAgentCreate(result: AgentCreateResult): string {
+  return `Created ${result.path}\nThis definition is not enabled. Run \`aiw agent add ${result.id}\` to register it.\n`;
+}
+
 export function formatAgentAdd(result: AgentAddResult): string {
   const verb = result.created ? "Registered" : "Already registered";
   return `${verb} agent '${result.id}' (definition: ${result.definitionId})\n`;
@@ -159,6 +163,14 @@ export function formatExport(result: ExportResult): string {
   }
   for (const agent of result.agents) {
     lines.push(`  ${agent.id}`);
+    const noWork =
+      agent.written.length === 0 &&
+      agent.unchanged.length === 0 &&
+      agent.skippedUnmanaged.length === 0;
+    if (noWork) {
+      lines.push("    No mappings matched; nothing to export.");
+      continue;
+    }
     lines.push(`    written: ${agent.written.join(", ") || "(none)"}`);
     lines.push(`    unchanged: ${agent.unchanged.join(", ") || "(none)"}`);
     if (agent.skippedUnmanaged.length > 0) {

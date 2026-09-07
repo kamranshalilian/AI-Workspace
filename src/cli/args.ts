@@ -3,7 +3,7 @@ import { AiwError } from "../core/errors.js";
 import type { ScopeKind } from "../manifest/types.js";
 
 export type CommandName = "init" | "status" | "validate" | "doctor" | "agent" | "export";
-export type AgentAction = "add" | "remove" | "list" | "status";
+export type AgentAction = "add" | "remove" | "list" | "status" | "create";
 
 export interface ParsedCli {
   command: CommandName | undefined;
@@ -60,8 +60,8 @@ export function parseCli(argv: string[]): ParsedCli {
   const commandRaw = positionals[0];
 
   if (commandRaw !== undefined && LATER_COMMANDS.has(commandRaw)) {
-    throw new AiwError("UNSUPPORTED", `Command '${commandRaw}' is not implemented in Phase 2.`, {
-      suggestion: "Phase 2 supports: init, status, validate, doctor, agent, export.",
+    throw new AiwError("UNSUPPORTED", `Command '${commandRaw}' is not implemented in Phase 3.`, {
+      suggestion: "Phase 3 supports: init, status, validate, doctor, agent, export.",
     });
   }
 
@@ -80,19 +80,14 @@ export function parseCli(argv: string[]): ParsedCli {
 
   if (command === "agent") {
     const actionRaw = positionals[1];
-    if (actionRaw === "create") {
-      throw new AiwError("UNSUPPORTED", "Command 'agent create' is not implemented until Phase 3.", {
-        suggestion: "Add a YAML file under .ai/agents/ and run `aiw agent add <id>`.",
-      });
-    }
     if (actionRaw === undefined) {
-      throw new AiwError("USAGE", "Usage: aiw agent <add|remove|list|status> [id].");
+      throw new AiwError("USAGE", "Usage: aiw agent <create|add|remove|list|status> [id].");
     }
     if (!isAgentAction(actionRaw)) {
       throw new AiwError("USAGE", `Unknown agent action '${actionRaw}'.`);
     }
     agentAction = actionRaw;
-    if (actionRaw === "add" || actionRaw === "remove") {
+    if (actionRaw === "add" || actionRaw === "remove" || actionRaw === "create") {
       const id = positionals[2];
       if (id === undefined || id.trim() === "") {
         throw new AiwError("USAGE", `Usage: aiw agent ${actionRaw} <id>.`);
@@ -155,5 +150,11 @@ function isCommand(value: string): value is CommandName {
 }
 
 function isAgentAction(value: string): value is AgentAction {
-  return value === "add" || value === "remove" || value === "list" || value === "status";
+  return (
+    value === "add" ||
+    value === "remove" ||
+    value === "list" ||
+    value === "status" ||
+    value === "create"
+  );
 }

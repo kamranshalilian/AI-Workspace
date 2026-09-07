@@ -6,6 +6,7 @@ import {
   INHERITANCE_MODES,
   MANIFEST_TOP_LEVEL_KEYS,
   NAME_PATTERN,
+  AGENT_ID_PATTERN,
   RESERVED_AI_NAMES,
   SCOPE_KINDS,
   SOURCE_CAPABILITIES,
@@ -83,7 +84,7 @@ export function validateManifestSchema(raw: unknown): SchemaValidationResult {
   const extendsResult = parseExtends(raw["extends"], issues);
   const context = parseContext(raw["context"], issues);
   const sources = parseKeyedMap(raw["sources"], "sources", issues, parseSource);
-  const agents = parseKeyedMap(raw["agents"], "agents", issues, parseAgent);
+  const agents = parseKeyedMap(raw["agents"], "agents", issues, parseAgent, AGENT_ID_PATTERN);
   const projects = parseProjects(raw["projects"], kind, issues);
   const policies = parsePolicies(raw["policies"], issues);
 
@@ -270,7 +271,7 @@ function parseAgent(raw: unknown, path: string, issues: ManifestIssue[]): AgentI
   const id = path.slice("agents.".length);
   let definition = id;
   if (raw["definition"] !== undefined) {
-    if (typeof raw["definition"] !== "string" || !NAME_PATTERN.test(raw["definition"])) {
+    if (typeof raw["definition"] !== "string" || !AGENT_ID_PATTERN.test(raw["definition"])) {
       issues.push({ path: `${path}.definition`, message: "definition must be a valid id." });
     } else {
       definition = raw["definition"];
@@ -416,6 +417,7 @@ function parseKeyedMap<T>(
   path: string,
   issues: ManifestIssue[],
   parseEntry: (value: unknown, entryPath: string, issues: ManifestIssue[]) => T | undefined,
+  idPattern: RegExp = NAME_PATTERN,
 ): Record<string, T> {
   if (raw === undefined) {
     return {};
@@ -427,7 +429,7 @@ function parseKeyedMap<T>(
   const result: Record<string, T> = {};
   const keys = Object.keys(raw).sort();
   for (const key of keys) {
-    if (!NAME_PATTERN.test(key)) {
+    if (!idPattern.test(key)) {
       issues.push({ path: `${path}.${key}`, message: `Invalid ${path} id '${key}'.` });
       continue;
     }

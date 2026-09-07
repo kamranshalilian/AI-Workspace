@@ -2,14 +2,14 @@
 import fs from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parseCli } from "./args.js";
-import { addAgent, agentStatus, listAgents, removeAgent } from "../core/agent.js";
+import { addAgent, agentStatus, createAgent, listAgents, removeAgent } from "../core/agent.js";
 import { doctorFrom } from "../core/doctor.js";
 import { AiwError, isAiwError } from "../core/errors.js";
 import { exportAgents } from "../core/export.js";
 import { initScope } from "../core/init.js";
 import { statusFrom } from "../core/status.js";
 import { validateFrom } from "../core/validate.js";
-import { formatAgentAdd, formatAgentList, formatAgentRemove, formatAgentStatus, formatDoctor, formatExport, formatInit, formatStatus, formatValidate, printJson } from "./format.js";
+import { formatAgentAdd, formatAgentCreate, formatAgentList, formatAgentRemove, formatAgentStatus, formatDoctor, formatExport, formatInit, formatStatus, formatValidate, printJson } from "./format.js";
 import { HELP_TEXT } from "./help.js";
 
 export function run(argv: string[]): number {
@@ -94,9 +94,21 @@ export function run(argv: string[]): number {
 
 function runAgent(cli: ReturnType<typeof parseCli>): number {
   if (cli.agentAction === undefined) {
-    throw new AiwError("USAGE", "Usage: aiw agent <add|remove|list|status> [id].");
+    throw new AiwError("USAGE", "Usage: aiw agent <create|add|remove|list|status> [id].");
   }
   switch (cli.agentAction) {
+    case "create": {
+      if (cli.targetId === undefined) {
+        throw new AiwError("USAGE", "Usage: aiw agent create <id>.");
+      }
+      const result = createAgent(cli.path, cli.targetId);
+      if (cli.json) {
+        printJson(result);
+      } else if (!cli.quiet) {
+        process.stdout.write(formatAgentCreate(result));
+      }
+      return 0;
+    }
     case "add": {
       if (cli.targetId === undefined) {
         throw new AiwError("USAGE", "Usage: aiw agent add <id>.");

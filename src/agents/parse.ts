@@ -2,12 +2,13 @@ import {
   ADAPTER_ENGINE_IDS,
   ADAPTER_STRATEGIES,
   AGENT_CAPABILITIES,
+  AGENT_ID_PATTERN,
   CONCAT_ORDERS,
   FORMAT_ENGINE_IDS,
-  NAME_PATTERN,
   PROVENANCE_MODES,
   SPEC_VERSION,
 } from "../config/constants.js";
+import { isValidAgentId } from "./ids.js";
 import { toPosixPath } from "../filesystem/paths.js";
 import { parseYamlDocument } from "../manifest/parse.js";
 import type {
@@ -60,8 +61,8 @@ export function validateAgentDefinition(
     issues.push({ path: "kind", message: "kind must be 'agent-definition'." });
   }
   const id = raw["id"];
-  if (typeof id !== "string" || !NAME_PATTERN.test(id)) {
-    issues.push({ path: "id", message: "id must match the name pattern." });
+  if (typeof id !== "string" || !AGENT_ID_PATTERN.test(id) || !isValidAgentId(id)) {
+    issues.push({ path: "id", message: "id must be a portable Agent ID ([a-z0-9][a-z0-9._-]*)." });
   }
   const name = raw["name"];
   if (typeof name !== "string" || name.trim() === "") {
@@ -177,8 +178,11 @@ function parseAdapter(
 }
 
 function parseMappings(raw: unknown, issues: DefinitionIssue[]): AgentMapping[] {
-  if (!Array.isArray(raw) || raw.length === 0) {
-    issues.push({ path: "adapter.mappings", message: "adapter.mappings must contain at least one mapping." });
+  if (raw === undefined) {
+    return [];
+  }
+  if (!Array.isArray(raw)) {
+    issues.push({ path: "adapter.mappings", message: "adapter.mappings must be an array." });
     return [];
   }
   const mappings: AgentMapping[] = [];

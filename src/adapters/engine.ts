@@ -59,7 +59,7 @@ export function renderDefinition(
   if (definition.adapter.strategy !== "generated") {
     throw new AiwError(
       "UNSUPPORTED",
-      `Adapter strategy '${definition.adapter.strategy}' is not implemented in Phase 2.`,
+      `Adapter strategy '${definition.adapter.strategy}' is not implemented.`,
       { suggestion: "Use strategy: generated." },
     );
   }
