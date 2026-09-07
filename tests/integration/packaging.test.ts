@@ -65,6 +65,7 @@ test("P/Q/R/S — packed global CLI works outside the repository", { timeout: 18
     const help = run(["--help"]);
     assert.equal(help.status, 0, help.stderr);
     assert.match(help.stdout, /agent create/);
+    assert.match(help.stdout, /source add/);
 
     assert.equal(run(["init", "--name", "clean"]).status, 0);
     assert.equal(run(["status"]).status, 0);
@@ -85,6 +86,29 @@ test("P/Q/R/S — packed global CLI works outside the repository", { timeout: 18
     const exported = run(["export", "--agent", "my-agent"]);
     assert.equal(exported.status, 0, exported.stderr);
     assert.match(exported.stdout, /No mappings matched; nothing to export/);
+
+    fs.mkdirSync(path.join(outside, "knowledge"), { recursive: true });
+    fs.writeFileSync(path.join(outside, "knowledge", "note.md"), "hi\n");
+    const sourceHelp = run(["source", "--help"]);
+    assert.equal(sourceHelp.status, 0, sourceHelp.stderr);
+    assert.match(sourceHelp.stdout, /source add/);
+    const sourceAdd = run([
+      "source",
+      "add",
+      "knowledge",
+      "--type",
+      "directory",
+      "--path",
+      "./knowledge",
+      "--capabilities",
+      "read,index",
+    ]);
+    assert.equal(sourceAdd.status, 0, sourceAdd.stderr);
+    assert.equal(fs.existsSync(path.join(outside, ".ai", "sources")), false);
+    const sourceList = run(["source", "list"]);
+    assert.equal(sourceList.status, 0, sourceList.stderr);
+    assert.match(sourceList.stdout, /knowledge/);
+    assert.equal(run(["source", "remove", "knowledge"]).status, 0);
   } finally {
     rmTempDir(packDir);
     rmTempDir(prefix);

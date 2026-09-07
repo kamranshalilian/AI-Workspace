@@ -21,7 +21,7 @@ const forbiddenTokens = [
   "CLAUDE.md",
 ];
 
-const scannedRoots = ["core", "manifest", "resolution", "filesystem", "config", "agents", "adapters"];
+const scannedRoots = ["core", "manifest", "resolution", "filesystem", "config", "agents", "adapters", "sources"];
 
 test("core modules do not contain vendor-specific branching or names", () => {
   const srcRoot = path.join(repoRoot(), "src");
@@ -51,9 +51,10 @@ test("core modules do not contain vendor-specific branching or names", () => {
 
 test("no vendor-named or custom-agent TypeScript implementations exist", () => {
   const srcRoot = path.join(repoRoot(), "src");
-  for (const name of ["cursor", "claude", "codex", "graphify", "test-agent", "my-agent"]) {
+  for (const name of ["cursor", "claude", "codex", "graphify", "spec-kit", "speckit", "test-agent", "my-agent"]) {
     assert.equal(fs.existsSync(path.join(srcRoot, "adapters", `${name}.ts`)), false);
     assert.equal(fs.existsSync(path.join(srcRoot, "agents", `${name}.ts`)), false);
+    assert.equal(fs.existsSync(path.join(srcRoot, "sources", `${name}.ts`)), false);
   }
 });
 

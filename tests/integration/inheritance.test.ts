@@ -299,7 +299,7 @@ test("child source id overrides inherited source", () => {
     const source = snapshot.sources.find((item) => item.id === "shared-docs");
     assert.equal(source?.type, "file");
     assert.equal(source?.originName, "accounting");
-    assert.equal(source?.status, "ok");
+    assert.equal(source?.status, "resolved");
   } finally {
     rmTempDir(workspace);
   }
