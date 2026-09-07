@@ -183,7 +183,21 @@ Write native files for enabled agents (or one agent).
 
 ### `aiw source add`
 
-Write `sources:` entry. Do not copy files.
+Write a `sources:` entry. Do not copy files, create `.ai/sources/`, or execute tools.
+
+```bash
+aiw source add <id> --type <type> --path <path> [--capabilities read,index]
+```
+
+`--path` is the source path, normalized to POSIX in the manifest. The path need not exist; missing paths are `unresolved`. Duplicate ids fail.
+
+### `aiw source list`
+
+Show registered sources: id, type, path, capabilities, and `resolved` / `unresolved` / `invalid`. `--json` is deterministic.
+
+### `aiw source remove`
+
+Remove the manifest entry only. Do not delete source files or `.ai/sources/<id>`.
 
 ### `aiw project add <path>`
 

@@ -48,6 +48,8 @@ Phase 3 implemented `aiw agent create`, empty-mapping stubs, ID safety, local sh
 - CLI source add/list/remove
 - prove with Graphify-shaped and spec-kit-shaped **fixtures** (directories), not special parsers
 
+Phase 4 implemented generic directory/file/repository/generated sources, capability enforcement, inventory with security exclusions, and `aiw source add|list|remove`. Graphify and spec-kit appear only as test fixtures.
+
 ## Phase 5 — Synchronization
 
 - import (non-destructive)

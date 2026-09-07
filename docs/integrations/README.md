@@ -1,6 +1,6 @@
 # Integrations
 
-**Status:** Phase 3 ships bundled **YAML** agent definitions, a generic adapter engine, and `aiw agent create` for user-defined definitions. No vendor-specific TypeScript modules exist.
+**Status:** Phase 4 ships bundled **YAML** agent definitions, a generic adapter engine, `aiw agent create`, and generic federated **sources**. No vendor-specific TypeScript modules exist.
 
 AI Workspace does not give any vendor or tool a privileged core module.
 
@@ -44,7 +44,7 @@ Export updates managed files and refuses to overwrite files that lack this marke
 
 ## Sources
 
-Sources are federated references. Phase 1 parses them; the `aiw source` CLI is Phase 4.
+Sources are federated references. `aiw source add|list|remove` registers them in the manifest without copying. `.ai/sources/` is not created until import (Phase 5).
 
 See [Sources](../specification/04-sources.md).
 

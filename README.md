@@ -4,7 +4,7 @@ AI Workspace is a **local-first, Git-friendly, tool-agnostic context layer** for
 
 It gives a project one canonical place for AI knowledge — `.ai/` — and treats agent-specific files such as `.cursor/`, `AGENTS.md`, and `CLAUDE.md` as **adapters** of that layer, not as the source of truth.
 
-**Current status: Phase 3 (user-defined Agent Definitions).** The globally installed `aiw` CLI can initialize a local `.ai` directory, resolve inheritance, create and register declarative YAML agent definitions, and export deterministic native files. Sources CLI, import/sync, and workspace `--all` are not implemented.
+**Current status: Phase 4 (sources and context federation).** The globally installed `aiw` CLI can initialize a local `.ai` directory, resolve inheritance, create and register declarative YAML agent definitions, export native files, and register federated sources by reference. Import/sync and workspace `--all` are not implemented.
 
 ## Requirements
 
@@ -108,7 +108,21 @@ See [Agents and adapters](docs/specification/05-agents-adapters.md).
 
 ## How sources work
 
-A **source** is a federated reference declared in the manifest. Phase 1 parses, validates, and inherits source declarations. It does not copy trees, run generators, or add a `aiw source` command.
+A **source** is a federated reference to knowledge that stays outside `.ai/`. Registration does not copy, import, or execute anything.
+
+```bash
+aiw source add graphify --type directory --path ../.graphify --capabilities read,index
+aiw source list
+aiw source remove graphify
+```
+
+```text
+source add    = register a reference in the manifest
+source list   = show type, path, capabilities, and resolution status
+source remove = unregister the reference
+```
+
+The live files remain at `path`. `.ai/sources/` is reserved for a later import snapshot (Phase 5) and is **not** created by these commands.
 
 See [Sources](docs/specification/04-sources.md).
 
@@ -172,15 +186,19 @@ aiw agent remove cursor
 
 ## How to add a source
 
-Not implemented (Phase 4). You may already declare `sources:` in `manifest.yaml`; Phase 1 will inherit and report them.
+```bash
+aiw source add knowledge --type directory --path ../knowledge --capabilities read,index
+```
+
+Only `.ai/manifest.yaml` changes. The referenced tree is not copied.
 
 ## Current limitations
 
-- No source connectors or `aiw source` command
 - No import, promote, or sync
 - No workspace project registry CLI or `--all`
 - No executable adapters or plugins
 - Only the `generated` integration strategy is implemented
+- Source content is not fed into agent export yet
 - No MCP, embeddings, cloud, or GUI
 
 ## Development

@@ -100,7 +100,7 @@ Unknown capability strings are validation errors in v1 (closed set).
 - Do not copy source trees into `.ai/` during `init`, `status`, `doctor`, or resolution.
 - `aiw source add` writes a manifest entry only.
 - Physical import into `.ai/sources/<id>/` is a later **import** operation (Phase 5) and still leaves the original in place.
-- Resolution may record source files in the snapshot as `source:<id>:<relativePath>` identities so adapters *could* consume them later. **v1 Phase 1 does not feed sources into adapters.** Status lists them. Export of source content is Phase 4+.
+- Resolution may record source files in the snapshot as `source:<id>:<relativePath>` identities so adapters *could* consume them later. **Phase 4 inventories sources for status/list. It does not feed source files into agent export.** Export of source content and import into `.ai/sources/` are Phase 5.
 
 ## Path rules
 
