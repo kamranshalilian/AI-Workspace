@@ -8,6 +8,8 @@ export const NAME_PATTERN = /^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$/;
 /** Portable Agent Definition id. Validated before any filesystem join. */
 export const AGENT_ID_PATTERN = /^[a-z0-9][a-z0-9._-]*$/;
 export const AGENT_ID_MAX_LENGTH = 64;
+export const PROJECT_ID_PATTERN = AGENT_ID_PATTERN;
+export const PROJECT_ID_MAX_LENGTH = AGENT_ID_MAX_LENGTH;
 
 export const DEFAULT_CONTEXT_INCLUDE = [
   "context/**",

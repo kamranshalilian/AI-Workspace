@@ -1,6 +1,6 @@
 # Integrations
 
-**Status:** Phase 5 ships bundled **YAML** agent definitions, a generic adapter engine, `aiw agent create`, generic federated **sources**, import, promote, and state-aware sync. No vendor-specific TypeScript modules exist.
+**Status:** Phase 6 ships bundled **YAML** agent definitions, a generic adapter engine, `aiw agent create`, generic federated **sources**, import, promote, state-aware sync, and registry-driven **workspace federation**. No vendor-specific TypeScript modules exist.
 
 AI Workspace does not give any vendor or tool a privileged core module.
 
@@ -47,6 +47,10 @@ Export updates managed files and refuses to overwrite files that lack this marke
 Sources are federated references. `aiw source add|list|remove` registers them in the manifest without copying. `.ai/sources/` is not created until import (Phase 5).
 
 See [Sources](../specification/04-sources.md).
+
+## Workspaces
+
+A workspace is `kind: workspace` plus a `projects:` registry. `--all` iterates that registry. Inheritance still requires explicit `extends` on each project. No vendor- or source-specific federation code exists.
 
 ## Adding a new integration later
 

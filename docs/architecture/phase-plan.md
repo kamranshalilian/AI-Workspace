@@ -61,10 +61,11 @@ Phase 5 implemented generic import, promote, deterministic state identity in `.a
 
 ## Phase 6 — Workspace federation
 
-- `projects:` registry CLI
-- `--all` commands
-- `agent enable/disable --all`
-- inheritance remains the Phase 1 resolver; this phase is management UX
+- `projects:` registry CLI (`aiw project add|list|remove`)
+- `--all` for status, validate, doctor, export, and sync
+- registry-driven isolation; inheritance remains the Phase 1 resolver
+
+Phase 6 implemented workspace federation. `aiw agent enable|disable` was listed in the original phase sketch and is **not** implemented.
 
 ## Phase 7 — Ecosystem (only if justified)
 

@@ -8,6 +8,8 @@ import type { SyncResult } from "../core/sync.js";
 import type { InitResult } from "../core/init.js";
 import type { StatusSummary } from "../core/status.js";
 import type { ValidateReport } from "../core/validate.js";
+import type { ProjectAddResult, ProjectListResult, ProjectRemoveResult } from "../core/project.js";
+import type { FederatedReport } from "../core/federation.js";
 import type { SnapshotIssue } from "../resolution/types.js";
 
 export function formatInit(result: InitResult): string {
@@ -65,6 +67,15 @@ export function formatStatus(summary: StatusSummary): string {
   } else {
     for (const source of summary.sources) {
       lines.push(`  ${source.id}: ${source.type} (${source.status})`);
+    }
+  }
+  lines.push("");
+  lines.push("Projects");
+  if (summary.projects.length === 0) {
+    lines.push("  (none)");
+  } else {
+    for (const project of summary.projects) {
+      lines.push(`  ${project.id}: ${project.path} (${project.status})`);
     }
   }
   lines.push("");
@@ -256,6 +267,67 @@ export function formatSync(result: SyncResult): string {
   }
   if (result.conflicts.length > 0) {
     lines.push(`  conflicts: ${result.conflicts.join(", ")}`);
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+export function formatProjectAdd(result: ProjectAddResult): string {
+  return `Registered project '${result.id}' (${result.path}, ${result.status})\nProject registration does not create .ai/, export, or modify the target project.\n`;
+}
+
+export function formatProjectRemove(result: ProjectRemoveResult): string {
+  return `Removed project '${result.id}' from the workspace registry.\nProject files were not deleted.\n`;
+}
+
+export function formatProjectList(result: ProjectListResult): string {
+  if (result.projects.length === 0) {
+    return `Projects (${result.workspace})\n  (none)\n`;
+  }
+  const lines = [`Projects (${result.workspace})`];
+  for (const project of result.projects) {
+    lines.push(`  ${project.id}   ${project.path}   ${project.status}`);
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+export function formatStatusAll(result: FederatedReport<StatusSummary>): string {
+  const lines = [`Workspace: ${result.workspace.name}`, ""];
+  if (result.projects.length === 0) {
+    lines.push("  (none)");
+    return `${lines.join("\n")}\n`;
+  }
+  for (const project of result.projects) {
+    lines.push(project.id);
+    lines.push(`  .ai        ${project.status}`);
+    if (project.result) {
+      lines.push(`  inheritance ${project.result.inheritance.mode}`);
+      lines.push(`  agents     ${project.result.agents.length}`);
+      lines.push(`  sources    ${project.result.sources.length}`);
+    } else if (project.error) {
+      lines.push(`  ${project.error.message}`);
+    }
+    lines.push("");
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+export function formatFederated(result: FederatedReport<unknown>, label: string): string {
+  const header = result.ok ? `${label}: ok` : `${label}: completed with failures`;
+  const lines = [
+    header,
+    `Workspace: ${result.workspace.name}`,
+    `  projects: ${result.projects.length}`,
+  ];
+  if (result.projects.length === 0) {
+    lines.push("  (none)");
+    return `${lines.join("\n")}\n`;
+  }
+  for (const project of result.projects) {
+    const mark = project.ok ? "ok" : "FAIL";
+    lines.push(`  ${project.id}   ${project.path}   ${project.status}   ${mark}`);
+    if (project.error) {
+      lines.push(`    ${project.error.message}`);
+    }
   }
   return `${lines.join("\n")}\n`;
 }

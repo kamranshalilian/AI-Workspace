@@ -1,11 +1,10 @@
-import { isDirectory } from "../filesystem/io.js";
 import {
   comparePosix,
   isStrictDescendant,
   resolveFromBase,
-  toPosixPath,
 } from "../filesystem/paths.js";
 import type { Manifest } from "../manifest/types.js";
+import { classifyProject } from "../projects/classify.js";
 import { collectSourceInventory } from "../sources/inventory.js";
 import { classifySourceStatus } from "../sources/status.js";
 import type { LoadedScope, ResolvedAgent, ResolvedProject, ResolvedSource } from "./types.js";
@@ -90,7 +89,6 @@ export function resolveProjects(scope: LoadedScope): ResolvedProject[] {
   if (scope.manifest.kind !== "workspace") {
     return [];
   }
-  const seen = new Map<string, string>();
   const projects: ResolvedProject[] = [];
   const ids = Object.keys(scope.manifest.projects).sort();
   for (const id of ids) {
@@ -98,19 +96,7 @@ export function resolveProjects(scope: LoadedScope): ResolvedProject[] {
     if (registration === undefined) {
       continue;
     }
-    const resolvedPath = resolveFromBase(scope.root, registration.path);
-    projects.push({
-      id,
-      path: toPosixPath(registration.path),
-      resolvedPath,
-      status: isDirectory(resolvedPath) ? "ok" : "missing",
-    });
-    const key = resolvedPath;
-    const previous = seen.get(key);
-    if (previous !== undefined) {
-      continue;
-    }
-    seen.set(key, id);
+    projects.push(classifyProject(scope.root, id, registration.path));
   }
   return projects.sort((a, b) => comparePosix(a.id, b.id));
 }

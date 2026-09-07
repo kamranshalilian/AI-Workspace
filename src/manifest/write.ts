@@ -106,6 +106,51 @@ export function removeManifestSource(manifestPath: string, id: string): void {
   assertManifest(manifestPath);
 }
 
+export function upsertManifestProject(manifestPath: string, id: string, projectPath: string): void {
+  const text = fs.readFileSync(manifestPath, "utf8");
+  const doc = parseDocument(text, { uniqueKeys: true, schema: "core", strict: true, merge: false });
+  if (!isMap(doc.contents)) {
+    throw new AiwError("VALIDATION", "Manifest must be a mapping.");
+  }
+  if (!doc.has("projects") || doc.get("projects") === null) {
+    doc.set("projects", doc.createNode({}));
+  }
+  const projects = doc.get("projects");
+  if (!isMap(projects)) {
+    throw new AiwError("VALIDATION", "projects must be a mapping.");
+  }
+  if (projects.has(id)) {
+    throw new AiwError("CONFLICT", `Project '${id}' is already registered.`, {
+      suggestion: "Choose a different id. Existing projects are not overwritten.",
+    });
+  }
+  projects.set(
+    id,
+    doc.createNode({
+      path: projectPath,
+    }),
+  );
+  persist(manifestPath, String(doc));
+  assertManifest(manifestPath);
+}
+
+export function removeManifestProject(manifestPath: string, id: string): void {
+  const text = fs.readFileSync(manifestPath, "utf8");
+  const doc = parseDocument(text, { uniqueKeys: true, schema: "core", strict: true, merge: false });
+  if (!isMap(doc.contents)) {
+    throw new AiwError("VALIDATION", "Manifest must be a mapping.");
+  }
+  const projects = doc.get("projects");
+  if (!isMap(projects) || !projects.has(id)) {
+    throw new AiwError("VALIDATION", `Project '${id}' is not registered.`, {
+      suggestion: "Run `aiw project list` to see registered projects.",
+    });
+  }
+  projects.delete(id);
+  persist(manifestPath, String(doc));
+  assertManifest(manifestPath);
+}
+
 function persist(manifestPath: string, raw: string): void {
   const text = raw.endsWith("\n") ? raw : `${raw}\n`;
   writeFileAtomic(manifestPath, text);

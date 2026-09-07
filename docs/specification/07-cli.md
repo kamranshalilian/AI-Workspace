@@ -87,15 +87,17 @@ aiw sync [--source <id>] [--agent <id>] [--dry-run] [--apply]
 ### Phase 6 — Workspace federation
 
 ```text
-aiw project add <path>
+aiw project add <id> <path>
 aiw project list
 aiw project remove <id>
 aiw status --all
-aiw doctor --all
 aiw validate --all
-aiw agent enable <id> [--all]
-aiw agent disable <id> [--all]
+aiw doctor --all
+aiw export --all
+aiw sync --all
 ```
+
+`--all` iterates the workspace `projects:` registry in lexicographical id order. It does not scan the filesystem. Import and promote remain explicitly scoped (`aiw import --all` and `aiw promote --all` are not provided). `aiw agent enable|disable` is not implemented in Phase 6.
 
 No `aiw workspace` subcommand in v1. A workspace is `kind: workspace` plus `aiw project …` and `--all`.
 
@@ -124,13 +126,13 @@ Show active scope, inheritance, resource counts by kind, agents, sources, and is
 
 Does not write files.
 
-`--all` (Phase 6): workspace registry, one section per project. Error if active/workspace target is not `kind: workspace`.
+`--all`: iterate registered workspace projects independently. Failure in one project does not skip the others. Exit `0` only when every project succeeds; otherwise non-zero. Does not export the workspace `.ai/` as if it were a project.
 
 ### `aiw validate`
 
 Schema + path resolution + cycle detection + definition load.
 
-No suggestions. CI-friendly. Exit `2` on any error.
+No suggestions. CI-friendly. Exit `2` on any error. `--all` validates the workspace registry, then each registered project independently.
 
 ### `aiw doctor`
 
@@ -144,7 +146,7 @@ No suggestions. CI-friendly. Exit `2` on any error.
 - unresolved sources
 - platform strategy issues
 
-Suggestions are warnings unless they make the snapshot unsafe (then errors).
+Suggestions are warnings unless they make the snapshot unsafe (then errors). `--all` aggregates workspace diagnostics with per-project doctor reports.
 
 ### `aiw agent add <definition-id>`
 
@@ -176,11 +178,11 @@ IDs must be non-empty, portable, and filesystem-safe (`[a-z0-9][a-z0-9._-]*`). R
 
 ### `aiw agent enable` / `disable`
 
-Set `enabled`. `--all` applies to registered projects (Phase 6). Does not by itself export.
+Not implemented in Phase 6. Use `aiw agent add` / `aiw agent remove` on a single project.
 
 ### `aiw export`
 
-Write native files for enabled agents (or one agent).
+Write native files for enabled agents (or one agent). `--all` exports each registered project into that project's own native paths. It does not write workspace-level `.cursor/`, `AGENTS.md`, or `CLAUDE.md`.
 
 ### `aiw source add`
 
@@ -200,11 +202,19 @@ Show registered sources: id, type, path, capabilities, and `resolved` / `unresol
 
 Remove the manifest entry only. Do not delete source files or `.ai/sources/<id>`.
 
-### `aiw project add <path>`
+### `aiw project add <id> <path>`
 
-Workspace only. Path relative to workspace root after normalization. Id defaults to normalized basename.
+Workspace only. Registry-only: writes the workspace manifest. Does not create project `.ai/`, does not modify the target, and does not export or inherit.
 
-Does not create a project `.ai`. Does not modify the project. Suggests `aiw init` via doctor if missing.
+The id is the registry identity. The path is stored POSIX-normalized and resolved from the workspace root, even when `--path` is used from another cwd.
+
+### `aiw project list`
+
+Show registered projects: id, declared path, and `resolved` / `unresolved` / `invalid`. `--json` is deterministic (lexicographical id).
+
+### `aiw project remove <id>`
+
+Remove the registry entry only. Do not delete the project directory, `.ai/`, native files, or Git metadata.
 
 ### `aiw import`
 
@@ -231,7 +241,7 @@ Compare related representations using last-known content hashes:
 | unchanged | changed | `external-changed` |
 | changed | changed | `conflict` |
 
-Default is report-only. `--apply` writes one-sided non-conflict updates only. `--dry-run` previews those writes. Conflict never overwrites either side.
+Default is report-only. `--apply` writes one-sided non-conflict updates only. `--dry-run` previews those writes. Conflict never overwrites either side. `--all` runs this independently per registered project; each project keeps its own `.ai/state/sync.yaml`.
 
 ## Output
 

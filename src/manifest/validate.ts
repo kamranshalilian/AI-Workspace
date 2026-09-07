@@ -7,6 +7,7 @@ import {
   MANIFEST_TOP_LEVEL_KEYS,
   NAME_PATTERN,
   AGENT_ID_PATTERN,
+  PROJECT_ID_PATTERN,
   RESERVED_AI_NAMES,
   RESERVED_SOURCE_TYPES,
   SCOPE_KINDS,
@@ -15,6 +16,7 @@ import {
   SPEC_VERSION,
 } from "../config/constants.js";
 import { toPosixPath } from "../filesystem/paths.js";
+import { isValidProjectId } from "../projects/ids.js";
 import type {
   AdapterStrategy,
   AgentInstance,
@@ -333,6 +335,11 @@ function parseProjects(
     return {};
   }
   return parseKeyedMap(raw, "projects", issues, (entry, path, inner) => {
+    const id = path.slice("projects.".length);
+    if (!isValidProjectId(id)) {
+      inner.push({ path, message: `Invalid projects id '${id}'.` });
+      return undefined;
+    }
     if (!isPlainObject(entry)) {
       inner.push({ path, message: "Project registration must be a mapping." });
       return undefined;
@@ -347,15 +354,12 @@ function parseProjects(
       return undefined;
     }
     const posix = toPosixPath(entry["path"]);
-    if (posix === ".." || posix.startsWith("../") || posix.includes("/../") || posix.endsWith("/..")) {
-      inner.push({
-        path: `${path}.path`,
-        message: "Project path must stay inside the workspace (no '..').",
-      });
+    if (posix.includes("\0")) {
+      inner.push({ path: `${path}.path`, message: "Project path must not contain null bytes." });
       return undefined;
     }
     return { path: posix };
-  });
+  }, PROJECT_ID_PATTERN);
 }
 
 function parsePolicies(raw: unknown, issues: ManifestIssue[]): Policies {

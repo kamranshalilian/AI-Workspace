@@ -13,7 +13,7 @@ MIT.
 3. Generated native files will be committed by default (adapter work is Phase 2).
 4. Bundle `cursor`, `claude`, and `codex` as YAML **data**. Core still has no vendor branches.
 5. `aiw init` writes only `manifest.yaml`.
-6. `projects[].path` cannot leave the workspace.
+6. `projects[].path` may leave the workspace (`../accounting` or absolute). Identity stays the registry key; paths resolve from the workspace root.
 7. Missing parent is an error.
 8. Node.js 20 LTS or newer.
 9. Package name `ai-workspace`, binary `aiw`.

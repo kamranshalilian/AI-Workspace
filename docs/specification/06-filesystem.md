@@ -116,7 +116,7 @@ Scenario J is **semantic** equivalence (identities, merge results, generated tex
 ## File safety
 
 - Do not follow directory traversal beyond explicit `extends` / `source.path` / native `to` templates
-- `projects[].path` must stay inside the workspace root
+- `projects[].path` may leave the workspace root (`../accounting` or an absolute path). Paths are POSIX-normalized, resolved from the workspace root, and must not contain NUL.
 - Mapping `to` templates must not resolve outside the **active scope root** in v1 (native files live in the project/workspace being exported)
 - Refuse to export into `.git/`
 - Apply [security exclusions](08-security.md) to canonical files, source trees, and import sources

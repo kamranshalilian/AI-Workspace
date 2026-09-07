@@ -13,7 +13,6 @@ import {
   mergeAgents,
   mergeResourceChain,
   mergeSources,
-  projectEscapesWorkspace,
   resolveProjects,
 } from "./merge.js";
 import type {
@@ -269,19 +268,20 @@ function validateWorkspaceProjects(active: LoadedScope, issues: SnapshotIssue[])
     throw new AiwError("VALIDATION", `Duplicate project paths: ${duplicates.join("; ")}.`);
   }
   for (const project of projects) {
-    if (projectEscapesWorkspace(active, project.resolvedPath)) {
-      throw new AiwError(
-        "VALIDATION",
-        `Project '${project.id}' path '${project.path}' must stay inside the workspace.`,
-      );
-    }
-    if (project.status === "missing") {
+    if (project.status === "invalid") {
+      issues.push({
+        severity: "error",
+        code: "PROJECT_INVALID",
+        message: `Registered project '${project.id}' is invalid${project.invalidReason ? `: ${project.invalidReason}` : "."}`,
+        path: project.path,
+      });
+    } else if (project.status === "unresolved") {
       issues.push({
         severity: "warning",
-        code: "PROJECT_MISSING",
-        message: `Registered project '${project.id}' directory does not exist: ${project.resolvedPath}.`,
+        code: "PROJECT_UNRESOLVED",
+        message: `Registered project '${project.id}' is unresolved: ${project.resolvedPath}.`,
         path: project.path,
-        suggestion: "Create the directory or remove it from projects.",
+        suggestion: "Create the project directory and run `aiw init`, or remove it from projects.",
       });
     }
   }

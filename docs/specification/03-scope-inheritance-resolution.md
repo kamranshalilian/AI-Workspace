@@ -62,7 +62,9 @@ If none is found, commands other than `init` fail with exit code `4`.
 To target the enclosing workspace from inside a project:
 
 - Prefer running from the workspace root, or
-- Use `--workspace` (Phase 6), which continues walking until a `kind: workspace` manifest is found.
+- Pass `--path` to the workspace root (for example `aiw status --all --path /workspace`).
+
+`--all` and `aiw project …` require the active scope to be `kind: workspace`. They do not keep walking from a project `.ai/` up to a parent workspace.
 
 v1 Phase 1 commands operate on the active root only.
 
@@ -222,9 +224,7 @@ These are independent.
 | Inherits, not centrally listed | no | extend |
 | Isolated and unknown to workspace | no | no extends |
 
-`--all` commands use **registration only**.
-
-`doctor` on a workspace may **suggest** immediate child directories that contain `.ai/` but are unregistered. It must not recurse arbitrarily.
+`--all` commands use **registration only**. They do not scan the filesystem for unregistered projects.
 
 ## Cloning a project alone
 
@@ -244,4 +244,4 @@ Do not auto-skip missing parents in v1.
 
 - Real-path cycle → error
 - Parent manifest `kind` may be `workspace` or `project`. v1 does not require the parent to be a workspace. A project may extend another project. This supports nested repos. Doctor warns if a project extends another project rather than a workspace, because that is unusual.
-- `extends.path` may use `..`. Source paths may use `..`. Registered `projects[].path` may not.
+- `extends.path` may use `..`. Source paths may use `..`. Registered `projects[].path` may use `..` or an absolute path; identity remains the registry key, and paths are resolved from the workspace root.

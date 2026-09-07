@@ -12,9 +12,11 @@ export type CommandName =
   | "source"
   | "import"
   | "promote"
-  | "sync";
+  | "sync"
+  | "project";
 export type AgentAction = "add" | "remove" | "list" | "status" | "create";
 export type SourceAction = "add" | "remove" | "list";
+export type ProjectAction = "add" | "remove" | "list";
 
 export interface ParsedCli {
   command: CommandName | undefined;
@@ -36,9 +38,13 @@ export interface ParsedCli {
   capabilities: string | undefined;
   dryRun: boolean;
   apply: boolean;
+  all: boolean;
+  projectAction: ProjectAction | undefined;
+  projectPath: string | undefined;
 }
 
-const LATER_COMMANDS = new Set(["adapter", "project", "workspace"]);
+const LATER_COMMANDS = new Set(["adapter", "workspace"]);
+const ALL_COMMANDS = new Set(["status", "validate", "doctor", "export", "sync"]);
 
 export function parseCli(argv: string[]): ParsedCli {
   let parsed;
@@ -73,18 +79,12 @@ export function parseCli(argv: string[]): ParsedCli {
     });
   }
 
-  if (parsed.values.all) {
-    throw new AiwError("USAGE", "--all is not available until workspace federation (Phase 6).", {
-      suggestion: "Run the command from a single project or workspace root.",
-    });
-  }
-
   const positionals = parsed.positionals;
   const commandRaw = positionals[0];
 
   if (commandRaw !== undefined && LATER_COMMANDS.has(commandRaw)) {
-    throw new AiwError("UNSUPPORTED", `Command '${commandRaw}' is not implemented in Phase 5.`, {
-      suggestion: "Phase 5 supports: init, status, validate, doctor, agent, export, source, import, promote, sync.",
+    throw new AiwError("UNSUPPORTED", `Command '${commandRaw}' is not implemented in Phase 6.`, {
+      suggestion: "Phase 6 supports: init, status, validate, doctor, agent, export, source, import, promote, sync, project.",
     });
   }
 
@@ -100,14 +100,17 @@ export function parseCli(argv: string[]): ParsedCli {
 
   let agentAction: AgentAction | undefined;
   let sourceAction: SourceAction | undefined;
+  let projectAction: ProjectAction | undefined;
   let targetId: string | undefined = parsed.values.agent;
   let sourceType = parsed.values.type;
   let sourcePath: string | undefined;
   let sourceId = parsed.values.source;
   let capabilities = parsed.values.capabilities;
   let startDir = parsed.values.path ?? process.cwd();
+  let projectPath: string | undefined;
   const dryRun = parsed.values["dry-run"] === true;
   const apply = parsed.values.apply === true;
+  const all = parsed.values.all === true;
 
   if (command === "agent") {
     const actionRaw = positionals[1];
@@ -178,6 +181,50 @@ export function parseCli(argv: string[]): ParsedCli {
         throw new AiwError("USAGE", `Unexpected arguments: ${positionals.slice(2).join(" ")}.`);
       }
     }
+  } else if (command === "project") {
+    const actionRaw = positionals[1];
+    if (parsed.values.help === true && actionRaw === undefined) {
+      projectAction = undefined;
+    } else {
+      if (actionRaw === undefined) {
+        throw new AiwError("USAGE", "Usage: aiw project <add|remove|list> [id] [path].");
+      }
+      if (!isProjectAction(actionRaw)) {
+        throw new AiwError("USAGE", `Unknown project action '${actionRaw}'.`);
+      }
+      projectAction = actionRaw;
+      if (actionRaw === "add") {
+        const id = positionals[2];
+        const declared = positionals[3];
+        if (parsed.values.help === true) {
+          targetId = id;
+          projectPath = declared;
+        } else {
+          if (id === undefined || id.trim() === "") {
+            throw new AiwError("USAGE", "Usage: aiw project add <id> <path>.");
+          }
+          if (declared === undefined || declared.trim() === "") {
+            throw new AiwError("USAGE", "Usage: aiw project add <id> <path>.");
+          }
+          if (positionals.length > 4) {
+            throw new AiwError("USAGE", `Unexpected arguments: ${positionals.slice(4).join(" ")}.`);
+          }
+          targetId = id;
+          projectPath = declared;
+        }
+      } else if (actionRaw === "remove") {
+        const id = positionals[2];
+        if (id === undefined || id.trim() === "") {
+          throw new AiwError("USAGE", "Usage: aiw project remove <id>.");
+        }
+        if (positionals.length > 3) {
+          throw new AiwError("USAGE", `Unexpected arguments: ${positionals.slice(3).join(" ")}.`);
+        }
+        targetId = id;
+      } else if (positionals.length > 2) {
+        throw new AiwError("USAGE", `Unexpected arguments: ${positionals.slice(2).join(" ")}.`);
+      }
+    }
   } else if (command === "export" || command === "import" || command === "promote" || command === "sync") {
     if (positionals.length > 1) {
       throw new AiwError("USAGE", `Unexpected arguments: ${positionals.slice(1).join(" ")}.`);
@@ -221,6 +268,12 @@ export function parseCli(argv: string[]): ParsedCli {
     throw new AiwError("USAGE", "Usage: aiw promote --agent <id> [--dry-run] [--json].");
   }
 
+  if (all && (command === undefined || !ALL_COMMANDS.has(command))) {
+    throw new AiwError("USAGE", "--all is only valid for `aiw status`, `aiw validate`, `aiw doctor`, `aiw export`, and `aiw sync`.", {
+      suggestion: "Import and promote remain explicitly scoped. Use `aiw project list` to inspect the registry.",
+    });
+  }
+
   if (command !== "source") {
     if (sourceType !== undefined) {
       throw new AiwError("USAGE", "--type is only valid for `aiw source add`.");
@@ -257,6 +310,9 @@ export function parseCli(argv: string[]): ParsedCli {
     capabilities,
     dryRun,
     apply,
+    all,
+    projectAction,
+    projectPath,
   };
 }
 
@@ -271,7 +327,8 @@ function isCommand(value: string): value is CommandName {
     value === "source" ||
     value === "import" ||
     value === "promote" ||
-    value === "sync"
+    value === "sync" ||
+    value === "project"
   );
 }
 
@@ -286,5 +343,9 @@ function isAgentAction(value: string): value is AgentAction {
 }
 
 function isSourceAction(value: string): value is SourceAction {
+  return value === "add" || value === "remove" || value === "list";
+}
+
+function isProjectAction(value: string): value is ProjectAction {
   return value === "add" || value === "remove" || value === "list";
 }

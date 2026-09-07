@@ -68,6 +68,8 @@ test("P/Q/R/S — packed global CLI works outside the repository", { timeout: 18
     assert.match(help.stdout, /source add/);
     assert.match(help.stdout, /import --source/);
     assert.match(help.stdout, /promote --agent/);
+    assert.match(help.stdout, /project add/);
+    assert.match(help.stdout, /--all/);
 
     assert.equal(run(["init", "--name", "clean"]).status, 0);
     assert.equal(run(["status"]).status, 0);
@@ -117,6 +119,20 @@ test("P/Q/R/S — packed global CLI works outside the repository", { timeout: 18
     assert.equal(sourceList.status, 0, sourceList.stderr);
     assert.match(sourceList.stdout, /knowledge/);
     assert.equal(run(["source", "remove", "knowledge"]).status, 0);
+
+    const ws = path.join(outside, "company");
+    fs.mkdirSync(ws, { recursive: true });
+    assert.equal(run(["init", "--kind", "workspace", "--name", "company-workspace", "--path", ws]).status, 0);
+    const projectAdd = run(["project", "add", "app", "./app", "--path", ws]);
+    assert.equal(projectAdd.status, 0, projectAdd.stderr);
+    assert.equal(fs.existsSync(path.join(ws, "app")), false);
+    const listedProjects = run(["project", "list", "--json", "--path", ws]);
+    assert.equal(listedProjects.status, 0, listedProjects.stderr);
+    const allStatus = run(["status", "--all", "--json", "--path", ws]);
+    assert.equal(allStatus.status, 2, allStatus.stderr);
+    const allPayload = JSON.parse(allStatus.stdout) as { projects: { id: string; status: string }[] };
+    assert.equal(allPayload.projects[0]?.id, "app");
+    assert.equal(allPayload.projects[0]?.status, "unresolved");
   } finally {
     rmTempDir(packDir);
     rmTempDir(prefix);

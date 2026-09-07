@@ -62,7 +62,8 @@ export interface ResolvedProject {
   id: string;
   path: string;
   resolvedPath: string;
-  status: "ok" | "missing";
+  status: "resolved" | "unresolved" | "invalid";
+  invalidReason?: string;
 }
 
 export interface EffectivePolicies {

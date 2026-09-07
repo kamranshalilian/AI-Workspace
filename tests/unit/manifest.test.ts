@@ -91,11 +91,11 @@ test("rejects invalid source type", () => {
   assert.equal(result.ok, false);
 });
 
-test("rejects project path that escapes the workspace", () => {
+test("accepts project paths that leave the workspace root", () => {
   const result = parseAndValidateManifest(
     "specVersion: 1\nkind: workspace\nname: ws\nprojects:\n  other:\n    path: ../outside\n",
   );
-  assert.equal(result.ok, false);
+  assert.equal(result.ok, true);
 });
 
 test("unions user exclusions with built-in defaults", () => {

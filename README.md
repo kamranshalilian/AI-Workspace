@@ -4,7 +4,7 @@ AI Workspace is a **local-first, Git-friendly, tool-agnostic context layer** for
 
 It gives a project one canonical place for AI knowledge — `.ai/` — and treats agent-specific files such as `.cursor/`, `AGENTS.md`, and `CLAUDE.md` as **adapters** of that layer, not as the source of truth.
 
-**Current status: Phase 5 (synchronization, import, promote, and conflict detection).** The globally installed `aiw` CLI can initialize a local `.ai` directory, resolve inheritance, create and register declarative YAML agent definitions, export native files, register federated sources by reference, import source snapshots, promote native artifacts into canonical `.ai/` files, and report state-aware sync conflicts. Workspace `--all` is not implemented.
+**Current status: Phase 6 (workspace federation).** The globally installed `aiw` CLI can initialize a local `.ai` directory, resolve inheritance, create and register declarative YAML agent definitions, export native files, register federated sources by reference, import source snapshots, promote native artifacts into canonical `.ai/` files, report state-aware sync conflicts, and federate multiple projects through a workspace registry (`aiw project …` and `--all`).
 
 ## Requirements
 
@@ -92,7 +92,7 @@ workspace .ai  +  project .ai  =  effective project context
 
 A project may **extend** (default), **replace**, or **disable** inherited context, and may **exclude** specific inherited identities.
 
-Phase 1 implements this in the resolver. Central `--all` management is Phase 6.
+Phase 1 implements this in the resolver. Phase 6 adds a registry and `--all` orchestration; registry membership still does not imply inheritance.
 
 See [Scope, inheritance, and resolution](docs/specification/03-scope-inheritance-resolution.md).
 
@@ -153,6 +153,41 @@ aiw doctor
 
 See [CLI](docs/cli/README.md).
 
+## How workspace federation works
+
+A workspace manifest (`kind: workspace`) may register projects:
+
+```yaml
+specVersion: 1
+kind: workspace
+name: company-workspace
+
+projects:
+  accounting:
+    path: ./accounting
+  wallet:
+    path: ./wallet
+```
+
+```bash
+aiw init --kind workspace --name company-workspace
+aiw project add accounting ./accounting
+aiw project list
+aiw status --all
+aiw export --all
+```
+
+```text
+project add    = register a path in the workspace manifest
+project list   = show id, path, and resolved/unresolved/invalid
+project remove = unregister (does not delete the project)
+--all          = iterate registered projects, not the filesystem
+```
+
+Registration is not inheritance. A project receives workspace context only when its own manifest declares `extends`. `--all` never exports the workspace `.ai/` as if it were a project, and one project cannot write into another.
+
+Project ids are independent from directory names. Paths resolve from the workspace root, even when you run the CLI from `/tmp` with `--path /workspace`.
+
 ## How to add an agent
 
 Create a definition, enable it, then export native files. These are separate steps:
@@ -205,7 +240,8 @@ Promotion converts native agent files into canonical `.ai/` resources when a dec
 - Concatenated and reference-index native files cannot be promoted (no lossless reverse mapping)
 - `sync --apply` never writes into a live source; it may refresh the imported snapshot
 - No automatic native→canonical promotion during sync
-- No workspace project registry CLI or `--all`
+- `--all` requires the active scope to be `kind: workspace`; it does not walk from a nested project up to a parent workspace
+- Import and promote remain explicitly scoped (no `--all`)
 - No executable adapters or plugins
 - Source content is not fed into agent export
 - No MCP, embeddings, cloud, or GUI

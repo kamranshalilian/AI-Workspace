@@ -62,7 +62,7 @@ Linux and Windows produce semantically equivalent resolution and generated outpu
 | Manifest parse | 1 | Valid, invalid, unknown keys, duplicate keys |
 | Manifest validation | 1 | kinds, names, reserved includes, trust flags |
 | Scope detection | 1 | nearest `.ai`, none found → exit 4 |
-| Workspace discovery | 6 | `--workspace`, `--all` uses registry only |
+| Workspace discovery | 6 | `--all` uses registry only |
 | Project discovery | 6 | `project add/list`, missing path warning |
 | Inheritance extend | 6 (unit in 1 if fixtures allow) | union + child-wins |
 | Replace | 6 | parent resources absent |

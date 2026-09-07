@@ -3,7 +3,9 @@ import fs from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parseCli } from "./args.js";
 import { addAgent, agentStatus, createAgent, listAgents, removeAgent } from "../core/agent.js";
+import { addProject, listProjects, removeProject } from "../core/project.js";
 import { addSource, listSources, removeSource } from "../core/source.js";
+import { doctorAll, exportAll, statusAll, syncAll, validateAll } from "../core/federation.js";
 import { doctorFrom } from "../core/doctor.js";
 import { AiwError, isAiwError } from "../core/errors.js";
 import { exportAgents } from "../core/export.js";
@@ -13,14 +15,16 @@ import { promoteAgent } from "../core/promote.js";
 import { statusFrom } from "../core/status.js";
 import { syncWorkspace } from "../core/sync.js";
 import { validateFrom } from "../core/validate.js";
-import { formatAgentAdd, formatAgentCreate, formatAgentList, formatAgentRemove, formatAgentStatus, formatDoctor, formatExport, formatImport, formatInit, formatPromote, formatSourceAdd, formatSourceList, formatSourceRemove, formatStatus, formatSync, formatValidate, printJson } from "./format.js";
-import { HELP_TEXT, SOURCE_HELP_TEXT } from "./help.js";
+import { formatAgentAdd, formatAgentCreate, formatAgentList, formatAgentRemove, formatAgentStatus, formatDoctor, formatExport, formatFederated, formatImport, formatInit, formatProjectAdd, formatProjectList, formatProjectRemove, formatPromote, formatSourceAdd, formatSourceList, formatSourceRemove, formatStatus, formatStatusAll, formatSync, formatValidate, printJson } from "./format.js";
+import { HELP_TEXT, PROJECT_HELP_TEXT, SOURCE_HELP_TEXT } from "./help.js";
 
 export function run(argv: string[]): number {
   try {
     const cli = parseCli(argv);
     if (cli.help || (cli.command === undefined && !cli.version)) {
-      process.stdout.write(cli.command === "source" ? SOURCE_HELP_TEXT : HELP_TEXT);
+      process.stdout.write(
+        cli.command === "source" ? SOURCE_HELP_TEXT : cli.command === "project" ? PROJECT_HELP_TEXT : HELP_TEXT,
+      );
       return 0;
     }
     if (cli.version) {
@@ -49,6 +53,15 @@ export function run(argv: string[]): number {
         return 0;
       }
       case "status": {
+        if (cli.all) {
+          const result = statusAll(cli.path);
+          if (cli.json) {
+            printJson(result);
+          } else if (!cli.quiet) {
+            process.stdout.write(formatStatusAll(result));
+          }
+          return result.ok ? 0 : 2;
+        }
         const { summary } = statusFrom(cli.path);
         if (cli.json) {
           printJson(summary);
@@ -58,6 +71,15 @@ export function run(argv: string[]): number {
         return 0;
       }
       case "validate": {
+        if (cli.all) {
+          const report = validateAll(cli.path);
+          if (cli.json) {
+            printJson(report);
+          } else if (!cli.quiet) {
+            process.stdout.write(formatFederated(report, "Validate"));
+          }
+          return report.ok ? 0 : 2;
+        }
         const report = validateFrom(cli.path);
         if (cli.json) {
           printJson({ command: "validate", ...report });
@@ -67,6 +89,15 @@ export function run(argv: string[]): number {
         return report.ok ? 0 : 2;
       }
       case "doctor": {
+        if (cli.all) {
+          const report = doctorAll(cli.path);
+          if (cli.json) {
+            printJson(report);
+          } else if (!cli.quiet) {
+            process.stdout.write(formatFederated(report, "Doctor"));
+          }
+          return report.ok ? 0 : 2;
+        }
         const report = doctorFrom(cli.path);
         if (cli.json) {
           printJson(report);
@@ -79,6 +110,15 @@ export function run(argv: string[]): number {
         return runAgent(cli);
       }
       case "export": {
+        if (cli.all) {
+          const result = exportAll(cli.path, cli.targetId);
+          if (cli.json) {
+            printJson(result);
+          } else if (!cli.quiet) {
+            process.stdout.write(formatFederated(result, "Export"));
+          }
+          return federatedExit(result, 3);
+        }
         const result = exportAgents(cli.path, cli.targetId);
         if (cli.json) {
           printJson(result);
@@ -89,6 +129,9 @@ export function run(argv: string[]): number {
       }
       case "source": {
         return runSource(cli);
+      }
+      case "project": {
+        return runProject(cli);
       }
       case "import": {
         const result = importSource(cli.path, cli.sourceId, { dryRun: cli.dryRun });
@@ -109,6 +152,20 @@ export function run(argv: string[]): number {
         return result.ok ? 0 : 3;
       }
       case "sync": {
+        if (cli.all) {
+          const result = syncAll(cli.path, {
+            sourceId: cli.sourceId,
+            agentId: cli.targetId,
+            dryRun: cli.dryRun,
+            apply: cli.apply,
+          });
+          if (cli.json) {
+            printJson(result);
+          } else if (!cli.quiet) {
+            process.stdout.write(formatFederated(result, "Sync"));
+          }
+          return federatedExit(result, 3);
+        }
         const result = syncWorkspace(cli.path, {
           sourceId: cli.sourceId,
           agentId: cli.targetId,
@@ -232,6 +289,55 @@ function runSource(cli: ReturnType<typeof parseCli>): number {
       return 0;
     }
   }
+}
+
+function runProject(cli: ReturnType<typeof parseCli>): number {
+  if (cli.projectAction === undefined) {
+    throw new AiwError("USAGE", "Usage: aiw project <add|remove|list> [id] [path].");
+  }
+  switch (cli.projectAction) {
+    case "add": {
+      if (cli.targetId === undefined) {
+        throw new AiwError("USAGE", "Usage: aiw project add <id> <path>.");
+      }
+      const result = addProject(cli.path, cli.targetId, cli.projectPath);
+      if (cli.json) {
+        printJson(result);
+      } else if (!cli.quiet) {
+        process.stdout.write(formatProjectAdd(result));
+      }
+      return 0;
+    }
+    case "remove": {
+      if (cli.targetId === undefined) {
+        throw new AiwError("USAGE", "Usage: aiw project remove <id>.");
+      }
+      const result = removeProject(cli.path, cli.targetId);
+      if (cli.json) {
+        printJson(result);
+      } else if (!cli.quiet) {
+        process.stdout.write(formatProjectRemove(result));
+      }
+      return 0;
+    }
+    case "list": {
+      const result = listProjects(cli.path);
+      if (cli.json) {
+        printJson(result);
+      } else if (!cli.quiet) {
+        process.stdout.write(formatProjectList(result));
+      }
+      return 0;
+    }
+  }
+}
+
+function federatedExit(result: { ok: boolean; projects: { ok: boolean; result?: { ok?: boolean } }[] }, conflictCode: number): number {
+  if (result.ok) {
+    return 0;
+  }
+  const hasConflict = result.projects.some((item) => item.result?.ok === false);
+  return hasConflict ? conflictCode : 2;
 }
 
 function handleError(error: unknown, json: boolean): number {

@@ -126,12 +126,19 @@ test("CLI exits 4 when no .ai is present", () => {
 });
 
 test("later-phase commands are rejected", () => {
-  const result = aiw(["project"]);
+  const result = aiw(["adapter"]);
   assert.equal(result.status, 2);
-  assert.match(result.stderr, /Phase 5/);
+  assert.match(result.stderr, /Phase 6/);
 });
 
-test("--all is rejected in Phase 1", () => {
-  const result = aiw(["status", "--all"]);
-  assert.equal(result.status, 1);
+test("--all requires a workspace", () => {
+  const root = makeTempDir();
+  try {
+    aiw(["init", "--path", root, "--name", "demo"]);
+    const result = aiw(["status", "--all", "--path", root]);
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /not workspace/);
+  } finally {
+    rmTempDir(root);
+  }
 });

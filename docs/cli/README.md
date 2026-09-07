@@ -1,6 +1,6 @@
 # CLI documentation
 
-**Status:** Phase 5 implemented: `init`, `status`, `validate`, `doctor`, `agent create|add|remove|list|status`, `export`, `source add|list|remove`, `import`, `promote`, `sync`.
+**Status:** Phase 6 implemented: `init`, `status`, `validate`, `doctor`, `agent create|add|remove|list|status`, `export`, `source add|list|remove`, `import`, `promote`, `sync`, `project add|list|remove`, and `--all` on status/validate/doctor/export/sync.
 
 The normative contract is [docs/specification/07-cli.md](../specification/07-cli.md).
 
@@ -111,6 +111,26 @@ Conflict exit code is `3`. Both sides are preserved.
 
 Last-known hashes live in `.ai/state/sync.yaml` (Git-ignored). Imported file provenance lives in `.ai/sources/<id>/.aiw-import.yaml`.
 
-## Later phases
+## Phase 6 commands
 
-Workspace `--all` and project registry commands are **not** available yet.
+```bash
+aiw project add <id> <path>
+aiw project list [--json]
+aiw project remove <id>
+aiw status --all
+aiw validate --all
+aiw doctor --all
+aiw export --all
+aiw sync --all
+```
+
+```text
+Registry membership ≠ inheritance
+--all            = iterate projects: in the workspace manifest
+project add      = write the workspace registry only
+project remove   = unregister; do not delete the project
+```
+
+`--path` on these commands is the workspace discovery start. Registry paths then resolve from that workspace root, not from the current working directory.
+
+`--all` processes every registered project even when one fails. JSON output is lexicographical by project id. Import and promote do not accept `--all`.

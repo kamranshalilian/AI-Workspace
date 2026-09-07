@@ -21,7 +21,7 @@ const forbiddenTokens = [
   "CLAUDE.md",
 ];
 
-const scannedRoots = ["core", "manifest", "resolution", "filesystem", "config", "agents", "adapters", "sources", "state"];
+const scannedRoots = ["core", "manifest", "resolution", "filesystem", "config", "agents", "adapters", "sources", "state", "projects"];
 
 test("core modules do not contain vendor-specific branching or names", () => {
   const srcRoot = path.join(repoRoot(), "src");

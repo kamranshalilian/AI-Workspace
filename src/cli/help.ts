@@ -25,6 +25,11 @@ Commands:
   promote --agent <id>
                    Convert native agent files into canonical .ai/ resources
   sync             Report related canonical/source/native state
+  project add <id> <path>
+                   Register a project in the workspace registry
+  project list     List registered projects
+  project remove <id>
+                   Unregister a project (manifest only)
 
 Global options:
   --path <dir>   Start discovery from this directory
@@ -41,6 +46,10 @@ init options:
 
 export options:
   --agent <id>   Export a single registered agent
+  --all          Export each registered workspace project
+
+status / validate / doctor / export / sync options:
+  --all          Iterate the workspace project registry (not filesystem discovery)
 
 source add options:
   --type <type>          directory | file | repository | generated
@@ -71,6 +80,18 @@ promote = native artifact → canonical
 sync   = state-aware comparison
 
 source add = register a federated reference (does not copy, import, or execute)
+project add = register a workspace project (does not create .ai/ or inherit)
+`;
+
+export const PROJECT_HELP_TEXT = `AI Workspace — projects
+
+Usage:
+  aiw project add <id> <path>
+  aiw project list [--json]
+  aiw project remove <id>
+
+The registry lives in the workspace manifest. Registration is not inheritance.
+A project inherits workspace context only when its own manifest declares extends.
 `;
 
 export const SOURCE_HELP_TEXT = `AI Workspace — sources

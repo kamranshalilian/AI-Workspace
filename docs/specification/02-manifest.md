@@ -193,15 +193,17 @@ projects:
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `path` | POSIX string | yes | Path relative to the workspace root |
+| `path` | POSIX string | yes | Path resolved from the workspace root (not from cwd) |
 
 Rules:
 
 - Valid only when `kind: workspace`. Presence on a project manifest is an error.
-- Registration does **not** modify the project.
-- `path` must not escape the workspace root via `..` in v1. All registered projects are descendants of the workspace root.
-- Duplicate paths are errors.
-- Missing directories are doctor warnings, not parse errors.
+- Registration does **not** modify the project and does **not** imply inheritance.
+- Project ids match `[a-z0-9][a-z0-9._-]*`. They are registry keys, not filesystem paths.
+- `path` may be relative (including `..`) or absolute. Manifests store POSIX form. Resolution uses the workspace root, not `process.cwd()`.
+- Duplicate resolved paths are errors.
+- Missing directories or missing project `.ai/manifest.yaml` are `unresolved`, not parse errors.
+- Nested `kind: workspace` targets are `invalid`.
 
 This is the only v1 discovery mechanism for `* --all` commands. No unbounded filesystem scan.
 

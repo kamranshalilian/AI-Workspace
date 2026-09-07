@@ -25,6 +25,7 @@ export interface StatusSummary {
   };
   sources: { id: string; type: string; status: string; origin: string; capabilities: string[]; path: string }[];
   agents: { id: string; enabled: boolean; definition: string; origin: string }[];
+  projects: { id: string; path: string; status: string }[];
   validation: {
     errors: number;
     warnings: number;
@@ -93,6 +94,11 @@ export function summarizeStatus(snapshot: EffectiveSnapshot): StatusSummary {
       enabled: agent.enabled,
       definition: agent.definitionId,
       origin: agent.originName,
+    })),
+    projects: snapshot.projects.map((project) => ({
+      id: project.id,
+      path: project.path,
+      status: project.status,
     })),
     validation: { errors, warnings },
     issues: snapshot.issues,
