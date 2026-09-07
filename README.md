@@ -4,21 +4,35 @@ AI Workspace is a **local-first, Git-friendly, tool-agnostic context layer** for
 
 It gives a project one canonical place for AI knowledge — `.ai/` — and treats agent-specific files such as `.cursor/`, `AGENTS.md`, and `CLAUDE.md` as **adapters** of that layer, not as the source of truth.
 
-**Current status: Phase 2 (declarative adapters).** The `aiw` CLI can initialize a `.ai` directory, resolve inheritance, register bundled or local YAML agent definitions, and export deterministic native files. User-defined `agent create`, sources CLI, import/sync, and workspace `--all` are not implemented.
+**Current status: Phase 3 (user-defined Agent Definitions).** The globally installed `aiw` CLI can initialize a local `.ai` directory, resolve inheritance, create and register declarative YAML agent definitions, and export deterministic native files. Sources CLI, import/sync, and workspace `--all` are not implemented.
 
 ## Requirements
 
 - Node.js 20 LTS or newer
 
-## Install from this repository
+## Install
+
+AI Workspace is a globally installed CLI. Workspace state stays in the current project under `.ai/`.
+
+```bash
+npm install -g ai-workspace
+```
+
+```bash
+aiw init
+aiw status
+aiw agent list
+```
+
+The binary name is `aiw`. The package name is `ai-workspace`. After global install, the CLI works from any directory and does not require `ai-workspace` in the project's `node_modules`.
+
+### Install from this repository
 
 ```bash
 npm install
 npm run build
 npx aiw --help
 ```
-
-The binary name is `aiw`. The package name is `ai-workspace`.
 
 ## What AI Workspace is
 
@@ -127,21 +141,34 @@ See [CLI](docs/cli/README.md).
 
 ## How to add an agent
 
+Create a definition, enable it, then export native files. These are separate steps:
+
+```bash
+aiw agent create my-agent
+aiw agent add my-agent
+aiw export --agent my-agent
+```
+
+```text
+create = create definition   (.ai/agents/<id>.yaml only)
+add    = enable/register     (manifest only)
+export = materialize native output
+```
+
+`aiw agent create` writes a valid empty-mapping stub. It does not modify the manifest, enable the agent, or write native files. Edit the YAML, then `aiw agent add` and `aiw export`.
+
+Bundled definition ids currently include `cursor`, `claude`, and `codex`. A project-local file at `.ai/agents/<id>.yaml` shadows a bundled definition with the same id.
+
 ```bash
 aiw agent add cursor
 aiw export
-```
-
-`aiw agent add` registers the definition in `.ai/manifest.yaml` only. `aiw export` writes native files. Bundled definition ids currently include `cursor`, `claude`, and `codex`. A project-local file at `.ai/agents/<id>.yaml` can be added the same way.
-
-```bash
 aiw agent list
 aiw agent status
 aiw export --agent cursor
 aiw agent remove cursor
 ```
 
-Removal does not delete native files.
+`aiw agent add` registers the definition in `.ai/manifest.yaml` only. Removal does not delete native files.
 
 ## How to add a source
 
@@ -149,7 +176,6 @@ Not implemented (Phase 4). You may already declare `sources:` in `manifest.yaml`
 
 ## Current limitations
 
-- No `aiw agent create` stub generator (Phase 3)
 - No source connectors or `aiw source` command
 - No import, promote, or sync
 - No workspace project registry CLI or `--all`

@@ -40,6 +40,8 @@ Phase 2 implemented the generic adapter engine, four format engines, bundled YAM
 - documented stub definition
 - tests that a new id works without new TypeScript
 
+Phase 3 implemented `aiw agent create`, empty-mapping stubs, ID safety, local shadowing of bundled definitions, and global-install packaging tests.
+
 ## Phase 4 — Sources
 
 - generic source model

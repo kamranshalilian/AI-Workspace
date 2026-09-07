@@ -1,6 +1,6 @@
 # Integrations
 
-**Status:** Phase 2 ships bundled **YAML** agent definitions and a generic adapter engine. No vendor-specific TypeScript modules exist.
+**Status:** Phase 3 ships bundled **YAML** agent definitions, a generic adapter engine, and `aiw agent create` for user-defined definitions. No vendor-specific TypeScript modules exist.
 
 AI Workspace does not give any vendor or tool a privileged core module.
 
@@ -18,7 +18,7 @@ Bundled definition data (not Core code):
 
 These paths belong in definition files, not in `if` statements.
 
-Project-local definitions may be placed at `.ai/agents/<id>.yaml` and registered with `aiw agent add <id>`. `aiw agent create` is Phase 3.
+Project-local definitions may be created with `aiw agent create <id>` (writes `.ai/agents/<id>.yaml` only) and registered with `aiw agent add <id>`.
 
 See [Agents and adapters](../specification/05-agents-adapters.md).
 

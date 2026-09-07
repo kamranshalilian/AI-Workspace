@@ -220,13 +220,16 @@ Promotion must be requested (`--promote` or `aiw import --promote`). Never impli
 aiw agent create my-agent
 ```
 
-Writes `.ai/agents/my-agent.yaml` with a stub definition (`engine: declarative`, one `reference-index` mapping) and does not modify core.
+Writes `.ai/agents/my-agent.yaml` with a valid declarative stub (`engine: declarative`, `mappings: []`) and does not modify core or the manifest.
+
+Empty mappings are valid so the user can create the definition first and edit the YAML afterward. Export with no applicable mappings is a no-op.
 
 ```bash
 aiw agent add my-agent
+aiw export --agent my-agent
 ```
 
-Registers the instance in the manifest.
+Registers the instance in the manifest, then materializes native files if mappings match.
 
 That satisfies: no AI Workspace release is required to add an agent, provided existing format engines suffice.
 

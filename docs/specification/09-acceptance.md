@@ -45,7 +45,7 @@ Graphify is registered as a generic `directory` source. Core TypeScript does not
 
 ### H — User-defined agent
 
-`aiw agent create` + definition YAML registers a new agent without modifying core.
+`aiw agent create` writes `.ai/agents/<id>.yaml`. After the user edits mappings, `aiw agent add` + `aiw export` register a new agent without modifying core.
 
 ### I — Import is non-destructive
 

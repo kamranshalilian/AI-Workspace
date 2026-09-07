@@ -159,7 +159,19 @@ Remove the instance from the manifest. Do not delete native files in Phase 2.
 
 ### `aiw agent create <id>`
 
-Write `.ai/agents/<id>.yaml` stub. Fail if the file exists.
+Write `.ai/agents/<id>.yaml` with a deterministic, valid empty-mapping stub.
+
+Does **not** modify the manifest, enable/register the agent, generate native files, or export.
+
+```text
+create = create definition
+add    = enable/register
+export = materialize native output
+```
+
+Fail if `.ai/agents/<id>.yaml` already exists. Do not overwrite, merge, or modify bundled package definitions.
+
+IDs must be non-empty, portable, and filesystem-safe (`[a-z0-9][a-z0-9._-]*`). Reject path separators, `..`, `.`, and absolute/drive-qualified paths before constructing a filesystem path.
 
 ### `aiw agent enable` / `disable`
 
