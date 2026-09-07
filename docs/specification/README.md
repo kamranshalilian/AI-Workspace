@@ -1,6 +1,6 @@
 # AI Workspace Specification
 
-**Status:** Phase 0 draft. Awaiting review and approval before Phase 1 implementation.
+**Status:** Phase 0 approved. Spec version 1 is the Phase 1 implementation contract.
 
 **Spec version described:** `1`
 

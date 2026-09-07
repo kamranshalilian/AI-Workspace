@@ -1,6 +1,6 @@
 # Architecture
 
-**Status:** Phase 0 draft. Awaiting approval before production code.
+**Status:** Phase 0 approved. Phase 1 core is implemented.
 
 | Document | Contents |
 | --- | --- |
