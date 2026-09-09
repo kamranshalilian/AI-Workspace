@@ -106,3 +106,12 @@ Phase 7A additionally requires architecture tests that:
 - keep existing agent export working
 - forbid vendor branching in Core Skill semantics
 - do not require a proprietary Skill format
+
+Phase 7B additionally requires registry tests that:
+
+- resolve a `skills:` entry against `SKILL.md`
+- report missing and invalid artifacts without crashing siblings
+- omit `enabled: false` from the Effective Skill Set
+- inherit and override registry entries through existing resolution
+- leave federated Skills uncopied
+- surface `id@version` only when the artifact has a version

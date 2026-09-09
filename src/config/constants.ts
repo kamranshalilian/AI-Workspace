@@ -105,6 +105,7 @@ export const MANIFEST_TOP_LEVEL_KEYS = [
   "context",
   "sources",
   "agents",
+  "skills",
   "projects",
   "policies",
 ] as const;

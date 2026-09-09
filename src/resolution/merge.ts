@@ -7,7 +7,7 @@ import type { Manifest } from "../manifest/types.js";
 import { classifyProject } from "../projects/classify.js";
 import { collectSourceInventory } from "../sources/inventory.js";
 import { classifySourceStatus } from "../sources/status.js";
-import type { LoadedScope, ResolvedAgent, ResolvedProject, ResolvedSource } from "./types.js";
+import type { LoadedScope, ResolvedAgent, ResolvedProject, ResolvedSkill, ResolvedSource } from "./types.js";
 
 export function mergeResourceChain<T extends { identity: string }>(
   layers: readonly { resources: readonly T[]; exclude: readonly string[] }[],
@@ -77,6 +77,29 @@ export function mergeAgents(
         definitionId: agent.definition,
         enabled: agent.enabled,
         strategy: agent.adapter.strategy,
+        originRoot: layer.scope.root,
+        originName: layer.scope.manifest.name,
+      });
+    }
+  }
+  return [...map.values()].sort((a, b) => comparePosix(a.id, b.id));
+}
+
+export function mergeSkills(
+  layers: readonly { scope: LoadedScope; skills: Record<string, Manifest["skills"][string]> }[],
+): ResolvedSkill[] {
+  const map = new Map<string, ResolvedSkill>();
+  for (const layer of layers) {
+    const ids = Object.keys(layer.skills).sort();
+    for (const id of ids) {
+      const skill = layer.skills[id];
+      if (skill === undefined) {
+        continue;
+      }
+      map.set(id, {
+        id,
+        enabled: skill.enabled,
+        sourceId: skill.source,
         originRoot: layer.scope.root,
         originName: layer.scope.manifest.name,
       });

@@ -91,6 +91,40 @@ test("rejects invalid source type", () => {
   assert.equal(result.ok, false);
 });
 
+test("accepts an optional Skill registry entry without copying SKILL.md content", () => {
+  const result = parseAndValidateManifest(
+    [
+      "specVersion: 1",
+      "kind: project",
+      "name: accounting",
+      "skills:",
+      "  code-review:",
+      "    enabled: true",
+      "",
+    ].join("\n"),
+  );
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.manifest.skills["code-review"]?.enabled, true);
+    assert.equal(result.manifest.skills["code-review"]?.source, undefined);
+  }
+});
+
+test("rejects Skill registry keys that duplicate artifact content", () => {
+  const result = parseAndValidateManifest(
+    [
+      "specVersion: 1",
+      "kind: project",
+      "name: accounting",
+      "skills:",
+      "  code-review:",
+      "    body: not allowed",
+      "",
+    ].join("\n"),
+  );
+  assert.equal(result.ok, false);
+});
+
 test("accepts project paths that leave the workspace root", () => {
   const result = parseAndValidateManifest(
     "specVersion: 1\nkind: workspace\nname: ws\nprojects:\n  other:\n    path: ../outside\n",

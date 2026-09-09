@@ -11,6 +11,7 @@ import {
   RESERVED_AI_NAMES,
   RESERVED_SOURCE_TYPES,
   SCOPE_KINDS,
+  SKILL_ID_PATTERN,
   SOURCE_CAPABILITIES,
   SOURCE_TYPES,
   SPEC_VERSION,
@@ -29,6 +30,7 @@ import type {
   ProjectRegistration,
   SchemaValidationResult,
   ScopeKind,
+  SkillRegistration,
   SourceCapability,
   SourceConfig,
   SourceType,
@@ -88,6 +90,7 @@ export function validateManifestSchema(raw: unknown): SchemaValidationResult {
   const context = parseContext(raw["context"], issues);
   const sources = parseKeyedMap(raw["sources"], "sources", issues, parseSource);
   const agents = parseKeyedMap(raw["agents"], "agents", issues, parseAgent, AGENT_ID_PATTERN);
+  const skills = parseKeyedMap(raw["skills"], "skills", issues, parseSkill, SKILL_ID_PATTERN);
   const projects = parseProjects(raw["projects"], kind, issues);
   const policies = parsePolicies(raw["policies"], issues);
 
@@ -108,6 +111,7 @@ export function validateManifestSchema(raw: unknown): SchemaValidationResult {
     context,
     sources,
     agents,
+    skills,
     projects,
     policies,
   };
@@ -320,6 +324,38 @@ function parseAgent(raw: unknown, path: string, issues: ManifestIssue[]): AgentI
     }
   }
   return { enabled, definition, adapter: { strategy } };
+}
+
+function parseSkill(raw: unknown, path: string, issues: ManifestIssue[]): SkillRegistration | undefined {
+  if (!isPlainObject(raw)) {
+    issues.push({ path, message: "Skill registration must be a mapping." });
+    return undefined;
+  }
+  for (const key of Object.keys(raw)) {
+    if (!["enabled", "source"].includes(key)) {
+      issues.push({ path: `${path}.${key}`, message: `Unknown skill key '${key}'.` });
+    }
+  }
+  let enabled = true;
+  if (raw["enabled"] !== undefined) {
+    if (typeof raw["enabled"] !== "boolean") {
+      issues.push({ path: `${path}.enabled`, message: "enabled must be a boolean." });
+    } else {
+      enabled = raw["enabled"];
+    }
+  }
+  let source: string | undefined;
+  if (raw["source"] !== undefined) {
+    if (typeof raw["source"] !== "string" || !NAME_PATTERN.test(raw["source"])) {
+      issues.push({
+        path: `${path}.source`,
+        message: "source must be a valid source id.",
+      });
+    } else {
+      source = raw["source"];
+    }
+  }
+  return { enabled, source };
 }
 
 function parseProjects(

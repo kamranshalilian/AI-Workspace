@@ -15,11 +15,11 @@ AI Workspace does not execute Skills as a runtime. Lifecycle here means governan
 | Operation | Meaning | Phase 7A |
 | --- | --- | --- |
 | **discover** | Find candidate Skill trees (canonical, source, or later indexes) | **Planned.** No automatic filesystem discovery. Resolution only sees files already under included kinds or registered sources. |
-| **register** | Record a Skill in a workspace/project catalog (`id`, `name`, `version`, `source`, `provenance`, `status`, `trust`) | **Planned.** No `skills:` manifest key. Types exist; persistence does not. |
-| **validate** | Confirm the artifact is parseable Agent Skills content (`name`, `description`) without executing it | **Library only.** `parseSkillMarkdown` is available. No `aiw skill validate`. `aiw validate` still validates manifests, not Skill bodies. |
+| **register** | Record a Skill in the workspace/project catalog | **Phase 7B.** Optional `skills:` map in `manifest.yaml`. No `aiw skill add`. |
+| **validate** | Confirm the artifact is parseable Agent Skills content (`name`, `description`) without executing it | **Library.** `parseSkillMarkdown` / registry status `invalid`. No `aiw skill validate`. |
 | **trust** | Assign `untrusted` / `reviewed` / `trusted` and later script/network policy | **Planned.** Derived records default to `untrusted`. No policy engine, no sandbox. |
-| **enable** | Include the Skill in the Effective Skill Set | **Existing mechanism.** A canonical `skills/<id>/SKILL.md` that survives resolution is enabled. |
-| **disable** | Keep the file or parent Skill out of the Effective Skill Set | **Existing mechanism.** `exclude` on an inherited identity, `mode: disable`, or omitting the file. |
+| **enable** | Include the Skill in the Effective Skill Set | Canonical `SKILL.md` that survives resolution, unless registry `enabled: false`. |
+| **disable** | Keep a Skill out of the Effective Skill Set | Registry `enabled: false`, `exclude` of the resource identity, or `mode: disable`. |
 | **import** | Snapshot an external Skill source without making it canonical | **Existing mechanism.** `aiw import --source <id>` writes `.ai/sources/<id>/`. It does not install into `.ai/skills/`. |
 | **project / export** | Materialize Skill content into native agent files | **Existing mechanism.** `aiw export` uses declarative adapters. No Skill-specific exporter. |
 | **update** | Refresh canonical or imported bytes | **Existing mechanism.** Edit `.ai/skills/…` or re-import / `sync`. No automatic live-source overwrite. |
@@ -29,11 +29,12 @@ AI Workspace does not execute Skills as a runtime. Lifecycle here means governan
 
 ## Implemented vs planned (summary)
 
-**Represented in Phase 7A (types + parse + Effective Skill Set):**
+**Represented (types + parse + registry + Effective Skill Set):**
 
 ```text
-validate (parse)
-enable / disable (via resolution)
+register (manifest skills:)
+validate (parse / registry status)
+enable / disable (resolution + registry enabled)
 import / export / update / remove (via existing generic commands)
 provenance (via resolved resources)
 trust default (untrusted)
@@ -43,7 +44,6 @@ trust default (untrusted)
 
 ```text
 discover
-register (catalog)
 trust assignment and policy enforcement
 dependency installation
 Skill-specific CLI

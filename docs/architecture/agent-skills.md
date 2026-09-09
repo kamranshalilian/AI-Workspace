@@ -96,7 +96,9 @@ Every resolved Skill artifact reuses the existing resource provenance:
 | Is it trusted? | Skill trust model (default `untrusted` in Phase 7A; not a sandbox) |
 | Is it canonical or projected? | canonical `.ai/` vs adapter output outside `.ai/` |
 
-Externally registered Skills keep source-of-truth on the source until an explicit import/promote. Registration is not a copy.
+## Skill registry
+
+Optional `skills:` on `manifest.yaml` is management metadata. It points at a canonical package or a federated source. It does not store Skill body, `name`, or `description`. See [Skill registry](../concepts/skill-registry.md).
 
 ## Source federation
 

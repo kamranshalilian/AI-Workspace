@@ -46,6 +46,8 @@ sources: {}
 
 agents: {}
 
+skills: {}
+
 projects: {}
 
 policies: {}
@@ -179,6 +181,29 @@ See [Agents and adapters](05-agents-adapters.md).
 
 This block **enables** agents. It does not embed the full adapter implementation.
 
+### `skills` (optional)
+
+Map of Skill id → registry metadata. This is **not** a Skill format and must not duplicate `SKILL.md`.
+
+```yaml
+skills:
+  code-review: {}
+  security-review:
+    enabled: false
+  vendor-review:
+    source: vendor-skills
+```
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| *(key)* | Skill id | yes | Portable id. Canonical artifact is `.ai/skills/<id>/SKILL.md`. |
+| `enabled` | boolean | no | Default `true`. Merges like `agents` (child wins). |
+| `source` | source id | no | Federated source. Omitted means canonical. Does not copy. |
+
+Unknown keys (including `description`, `body`, `name`, `version`) are errors.
+
+See [Agent Skills](10-agent-skills.md) and [Skill registry](../concepts/skill-registry.md).
+
 ### `projects` (optional, workspace only)
 
 Map of project id → registration.
@@ -255,7 +280,7 @@ name: company-workspace
 
 `aiw init --kind workspace` writes the workspace equivalent.
 
-No `extends`, `context`, `agents`, `sources`, `projects`, or `policies` blocks are emitted unless the user passes explicit flags defined by the CLI contract.
+No `extends`, `context`, `agents`, `sources`, `skills`, `projects`, or `policies` blocks are emitted unless the user passes explicit flags defined by the CLI contract.
 
 ## Validation summary
 
@@ -272,6 +297,6 @@ A manifest is invalid if any of the following hold:
 - Reserved paths in `context.include`
 - Duplicate keys
 - `trust.*: true` in spec v1
-- Agent, source, or project ids fail the name pattern
+- Agent, source, project, or skill ids fail the name pattern
 
 Validation is strict. Warnings belong to `doctor`, not to parse success.

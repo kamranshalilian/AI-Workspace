@@ -41,13 +41,15 @@ It is derived deterministically. It is not a Skill execution runtime.
 
 External sources may contain `SKILL.md`. Those files are not in the Effective Skill Set until they exist as canonical resources (explicit import/promote, not registration).
 
+The optional manifest `skills:` map is registry metadata. `enabled: false` removes a Skill from the Effective Skill Set. Unregistered canonical `SKILL.md` files remain effective. See [Skill registry](../concepts/skill-registry.md).
+
 ## Metadata
 
 Parse requires Agent Skills `name` and `description`. Unknown frontmatter is preserved and ignored for behavior.
 
 If a version string is present (`metadata.version` or `version`), Core may surface it. Version identity, when shown, is `id@version` using that string. This is not a new versioning standard.
 
-Trust, registry status, and dependencies are AI Workspace governance fields. They are not a replacement Skill format. Phase 7A defaults trust to `untrusted` and dependencies to empty. Persistence of a Skill registry is not in spec v1.
+Trust, registry status, and dependencies are AI Workspace governance fields. They are not a replacement Skill format. Spec v1 may include an optional `skills:` map on the manifest as **registry metadata** (enabled flag and optional federated `source` id). That map must not store Skill body, `name`, or `description`.
 
 ## Security
 

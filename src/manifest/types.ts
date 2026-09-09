@@ -41,6 +41,16 @@ export interface AgentInstance {
   adapter: AgentAdapterConfig;
 }
 
+/**
+ * Manifest Skill registry entry. Metadata/reference only.
+ * Does not store SKILL.md body, name, or description.
+ */
+export interface SkillRegistration {
+  enabled: boolean;
+  /** Federated source id. Undefined means canonical `.ai/skills/<id>/`. */
+  source: string | undefined;
+}
+
 export interface ProjectRegistration {
   path: string;
 }
@@ -65,6 +75,7 @@ export interface Manifest {
   context: ContextConfig;
   sources: Record<string, SourceConfig>;
   agents: Record<string, AgentInstance>;
+  skills: Record<string, SkillRegistration>;
   projects: Record<string, ProjectRegistration>;
   policies: Policies;
 }

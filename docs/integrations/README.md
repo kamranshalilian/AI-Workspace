@@ -57,6 +57,7 @@ A workspace is `kind: workspace` plus a `projects:` registry. `--all` iterates t
 Skills are canonical files, preferably `.ai/skills/<id>/SKILL.md`. They are not a Core vendor engine.
 
 - Interoperate with Agent Skills; do not fork `SKILL.md`
+- Optional `skills:` registry metadata on the manifest
 - Inherit and exclude Skills like any other resource
 - Register an external Skill directory as a generic **source** without copying
 - Export remains the generic adapter path

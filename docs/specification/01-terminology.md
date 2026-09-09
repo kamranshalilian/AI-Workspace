@@ -37,7 +37,8 @@ A workspace root may itself contain knowledge, agents, and sources. It is not a 
 | **Effective context** | The resolved set of resources, sources, agents, and policies for a scope. |
 | **Agent Skills** | External artifact standard (`SKILL.md`, `name`, `description`). Not an AI Workspace format. |
 | **Skill artifact** | A standard Agent Skills package, typically `.ai/skills/<id>/SKILL.md`. |
-| **Effective Skill Set** | Deterministic Skill subset of effective context after inheritance. Not a runtime. |
+| **Effective Skill Set** | Deterministic Skill subset of effective context after inheritance and registry enablement. Not a runtime. |
+| **Skill registry** | Optional `skills:` map on the manifest. Metadata/reference only; not a Skill format. |
 | **Skill trust** | Governance label: `untrusted`, `reviewed`, or `trusted`. Does not execute scripts. |
 
 ## Inheritance and resolution

@@ -136,7 +136,9 @@ Example: `.ai/rules/security.md` → `rules/security.md`.
 
 Skills are resources. Standard Agent Skills artifacts use identity `skills/<id>/SKILL.md`.
 
-They follow the same table as resources. The **Effective Skill Set** is that subset after merge. It is not a second resolver and not a Skill runtime. See [Agent Skills](10-agent-skills.md).
+They follow the same table as resources. The **Effective Skill Set** is that subset after merge, minus registry `enabled: false`. It is not a second resolver and not a Skill runtime.
+
+The optional `skills:` manifest map is merged like `agents:` (child-wins). That merge uses the same chain; it is not a parallel inheritance engine. See [Skill registry](../concepts/skill-registry.md) and [Agent Skills](10-agent-skills.md).
 
 ### Sources
 

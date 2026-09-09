@@ -1,6 +1,6 @@
 # Architecture
 
-**Status:** Phase 6 implemented. Phase 7A is the Agent Skills architecture gate (documentation, types, fixtures, tests). It is not a Skill runtime.
+**Status:** Phase 6 implemented. Phase 7A is the Agent Skills architecture gate. Phase 7B adds an optional Skill registry on the manifest.
 
 | Document | Contents |
 | --- | --- |
@@ -11,6 +11,7 @@
 | [Phase 0 review](phase-0-review.md) | Required review: state, decisions, schema, CLI, tests, plan |
 | [Open decisions](open-decisions.md) | Items that need explicit approval |
 | [Skill lifecycle](../concepts/skill-lifecycle.md) | Discover…remove; implemented vs planned |
+| [Skill registry](../concepts/skill-registry.md) | Manifest `skills:` metadata vs `SKILL.md` |
 | [Positioning](../strategy/positioning.md) | Governance layer vs Agent Skills artifact |
 
 ## Module boundaries (non-negotiable)

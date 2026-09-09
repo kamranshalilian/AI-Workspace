@@ -58,6 +58,15 @@ export interface ResolvedAgent {
   originName: string;
 }
 
+/** Merged Skill registry declaration. Artifact status is interpreted after resolution. */
+export interface ResolvedSkill {
+  id: string;
+  enabled: boolean;
+  sourceId: string | undefined;
+  originRoot: string;
+  originName: string;
+}
+
 export interface ResolvedProject {
   id: string;
   path: string;
@@ -92,6 +101,7 @@ export interface EffectiveSnapshot {
   resources: ResolvedResource[];
   sources: ResolvedSource[];
   agents: ResolvedAgent[];
+  skills: ResolvedSkill[];
   projects: ResolvedProject[];
   policies: EffectivePolicies;
   issues: SnapshotIssue[];

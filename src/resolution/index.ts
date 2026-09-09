@@ -12,6 +12,7 @@ import {
   duplicateProjectPaths,
   mergeAgents,
   mergeResourceChain,
+  mergeSkills,
   mergeSources,
   resolveProjects,
 } from "./merge.js";
@@ -161,9 +162,14 @@ export function resolveScope(active: LoadedScope): EffectiveSnapshot {
     inheritanceMode === "extend" || inheritanceMode === "none"
       ? mergeChain.map((scope) => ({ scope, agents: scope.manifest.agents }))
       : [{ scope: active, agents: active.manifest.agents }];
+  const skillLayers =
+    inheritanceMode === "extend" || inheritanceMode === "none"
+      ? mergeChain.map((scope) => ({ scope, skills: scope.manifest.skills }))
+      : [{ scope: active, skills: active.manifest.skills }];
 
   const sources = mergeSources(sourceLayers, exclusions);
   const agents = mergeAgents(agentLayers);
+  const skills = mergeSkills(skillLayers);
   const projects = resolveProjects(active);
 
   for (const source of sources) {
@@ -242,6 +248,7 @@ export function resolveScope(active: LoadedScope): EffectiveSnapshot {
     resources,
     sources,
     agents,
+    skills,
     projects,
     policies: {
       exclusions,

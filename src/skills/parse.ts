@@ -8,23 +8,44 @@ import type { SkillArtifact } from "./types.js";
  * Does not execute scripts or interpret vendor-specific fields.
  */
 export function parseSkillMarkdown(text: string): SkillArtifact {
+  const result = tryParseSkillMarkdown(text);
+  if (!result.ok) {
+    throw new AiwError("VALIDATION", result.message);
+  }
+  return result.artifact;
+}
+
+export function tryParseSkillMarkdown(
+  text: string,
+): { ok: true; artifact: SkillArtifact } | { ok: false; message: string } {
   const normalized = text.replace(/^\uFEFF/, "").replaceAll("\r\n", "\n").replaceAll("\r", "\n");
   const match = normalized.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
   if (match === null) {
-    throw new AiwError("VALIDATION", "SKILL.md must start with Agent Skills YAML frontmatter (name, description).");
+    return {
+      ok: false,
+      message: "SKILL.md must start with Agent Skills YAML frontmatter (name, description).",
+    };
   }
-  const raw = parseYamlDocument(match[1] ?? "");
+  let raw: unknown;
+  try {
+    raw = parseYamlDocument(match[1] ?? "");
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "SKILL.md frontmatter is not valid YAML.",
+    };
+  }
   if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
-    throw new AiwError("VALIDATION", "SKILL.md frontmatter must be a YAML mapping.");
+    return { ok: false, message: "SKILL.md frontmatter must be a YAML mapping." };
   }
   const record = raw as Record<string, unknown>;
   const name = record["name"];
   const description = record["description"];
   if (typeof name !== "string" || name.trim() === "") {
-    throw new AiwError("VALIDATION", "SKILL.md frontmatter requires a non-empty string 'name'.");
+    return { ok: false, message: "SKILL.md frontmatter requires a non-empty string 'name'." };
   }
   if (typeof description !== "string" || description.trim() === "") {
-    throw new AiwError("VALIDATION", "SKILL.md frontmatter requires a non-empty string 'description'.");
+    return { ok: false, message: "SKILL.md frontmatter requires a non-empty string 'description'." };
   }
   const extras: Record<string, unknown> = {};
   for (const key of Object.keys(record).sort()) {
@@ -35,11 +56,14 @@ export function parseSkillMarkdown(text: string): SkillArtifact {
   }
   const version = optionalVersion(extras);
   return {
-    name: name.trim(),
-    description: description.trim(),
-    version,
-    extras,
-    body: match[2] ?? "",
+    ok: true,
+    artifact: {
+      name: name.trim(),
+      description: description.trim(),
+      version,
+      extras,
+      body: match[2] ?? "",
+    },
   };
 }
 

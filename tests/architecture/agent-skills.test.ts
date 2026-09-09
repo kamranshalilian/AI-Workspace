@@ -209,7 +209,8 @@ test("Skill scripts are not executed when deriving the effective set", () => {
 });
 
 test("dedicated Skill lifecycle CLI is not implied by the Phase 7A model", () => {
-  assert.deepEqual([...SKILL_OPERATIONS_PLANNED], ["discover", "register", "trust"]);
+  assert.deepEqual([...SKILL_OPERATIONS_PLANNED], ["discover", "trust"]);
   assert.equal(SKILL_OPERATIONS_VIA_EXISTING_MECHANISMS.includes("export"), true);
+  assert.equal(SKILL_OPERATIONS_VIA_EXISTING_MECHANISMS.includes("register"), true);
   assert.equal(fs.existsSync(path.join(repoRoot(), "src", "cli", "skill.ts")), false);
 });

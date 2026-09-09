@@ -74,19 +74,24 @@ Documentation, types, fixtures, and architecture tests only.
 - Agent Skills is an external artifact standard (`SKILL.md`)
 - `.ai/skills/` is the canonical collection, not a competing format
 - Effective Skill Set is derived from existing resolution
-- No Skill CLI, marketplace, sandbox, or `skills:` manifest key
+- No Skill CLI, marketplace, sandbox, or Skill registry persistence
 
 See [agent-skills.md](agent-skills.md), [skill-lifecycle.md](../concepts/skill-lifecycle.md), [positioning.md](../strategy/positioning.md), and [specification 10](../specification/10-agent-skills.md).
+
+## Phase 7B — Skill registry (this gate)
+
+Optional `skills:` map on `manifest.yaml`. Interpretation is library-level (`skillRegistry`). No Skill CLI, no copy, no execution, no version resolver.
+
+See [skill-registry.md](../concepts/skill-registry.md).
 
 ## Phase 7 — later implementation (not started)
 
 Only after 7A is approved. Suggested order; each step needs its own approval:
 
-1. **7B** — optional Skill registry entries (additive metadata; still no proprietary `SKILL.md`)
-2. **7C** — persist trust/policy without executing scripts
-3. **7D** — explicit import/promote of standard Skill trees from sources (reuse Phase 5; no auto-copy)
-4. **7E** — surface `id@version` when Agent Skills version is present
-5. **7F** — dependency *model* validation (still no installer)
+1. **7C** — persist trust/policy without executing scripts
+2. **7D** — explicit import/promote of standard Skill trees from sources (reuse Phase 5; no auto-copy)
+3. **7E** — version pin/compare only if a later gate proves it is required (still no installer)
+4. **7F** — dependency *model* validation (still no installer)
 
 Still out of scope: marketplace, cloud registry, MCP, embeddings, LLM merge, Skill VM, vendor Skill engines.
 

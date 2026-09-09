@@ -26,6 +26,7 @@ If implementation would violate a rule here, stop, update this specification, th
 Related:
 
 - [Architecture](../architecture/)
+- [Skill registry](../concepts/skill-registry.md)
 - [Phase 0 review](../architecture/phase-0-review.md)
 - [Open decisions](../architecture/open-decisions.md)
 
