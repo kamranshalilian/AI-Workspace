@@ -1,11 +1,13 @@
 {
   "name": "ai-workspace",
   "version": "0.1.0",
-  "description": "Local-first, Git-friendly, tool-agnostic AI context and workspace layer",
+  "description": "Local-first AI context layer for projects and workspaces. Canonical .ai/ knowledge for Cursor, Claude, Codex, and custom agents — without vendor lock-in.",
   "type": "module",
   "bin": {
     "aiw": "./dist/cli/index.js"
   },
+  "main": "./dist/core/index.js",
+  "types": "./dist/core/index.d.ts",
   "exports": {
     ".": "./dist/core/index.js"
   },
@@ -22,15 +24,36 @@
     "build": "tsc -p tsconfig.build.json && node scripts/copy-definitions.mjs",
     "clean": "node -e \"const fs=require('fs'); for (const d of ['dist','dist-test']) fs.rmSync(d,{recursive:true,force:true})\"",
     "test": "npm run build && tsc -p tsconfig.test.json && node scripts/run-tests.mjs",
-    "aiw": "node dist/cli/index.js"
+    "aiw": "node dist/cli/index.js",
+    "prepublishOnly": "npm test"
   },
   "keywords": [
     "ai",
+    "ai-workspace",
+    "ai-context",
+    "ai-agents",
+    "agent-context",
+    "cursor",
+    "claude",
+    "codex",
+    "developer-tools",
+    "context-management",
     "workspace",
-    "context",
     "cli"
   ],
+  "homepage": "https://github.com/kamranshalilian/AI-Workspace#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kamranshalilian/AI-Workspace.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kamranshalilian/AI-Workspace/issues"
+  },
   "license": "MIT",
+  "author": {
+    "name": "Kamran Shalilian",
+    "url": "https://github.com/kamranshalilian"
+  },
   "dependencies": {
     "minimatch": "^10.0.3",
     "yaml": "^2.8.1"

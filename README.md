@@ -1,44 +1,22 @@
 # AI Workspace
 
-AI Workspace is a **local-first, Git-friendly, tool-agnostic context layer** for software projects and multi-project workspaces.
+[![npm version](https://img.shields.io/npm/v/ai-workspace.svg)](https://www.npmjs.com/package/ai-workspace)
+[![npm downloads](https://img.shields.io/npm/dm/ai-workspace.svg)](https://www.npmjs.com/package/ai-workspace)
+[![Node.js](https://img.shields.io/node/v/ai-workspace.svg)](https://www.npmjs.com/package/ai-workspace)
+[![License: MIT](https://img.shields.io/npm/l/ai-workspace.svg)](https://github.com/kamranshalilian/AI-Workspace/blob/main/LICENSE)
+[![GitHub](https://img.shields.io/badge/GitHub-kamranshalilian%2FAI--Workspace-181717?logo=github)](https://github.com/kamranshalilian/AI-Workspace)
 
-It gives a project one canonical place for AI knowledge — `.ai/` — and treats agent-specific files such as `.cursor/`, `AGENTS.md`, and `CLAUDE.md` as **adapters** of that layer, not as the source of truth.
+Local-first **AI context** for software projects and multi-project workspaces.
 
-**Current status: Phase 6 (workspace federation).** The globally installed `aiw` CLI can initialize a local `.ai` directory, resolve inheritance, create and register declarative YAML agent definitions, export native files, register federated sources by reference, import source snapshots, promote native artifacts into canonical `.ai/` files, report state-aware sync conflicts, and federate multiple projects through a workspace registry (`aiw project …` and `--all`).
+AI Workspace (`aiw`) gives a repository one canonical place for agent knowledge — `.ai/` — and treats Cursor, Claude, Codex, and custom-agent files as **adapters** of that layer, not as the source of truth.
 
-## Requirements
+**Status: Phase 6 (workspace federation).** The public CLI covers init, inheritance, declarative agents, export, federated sources, import, promote, sync, and multi-project `--all`.
 
-- Node.js 20 LTS or newer
+Repository: [github.com/kamranshalilian/AI-Workspace](https://github.com/kamranshalilian/AI-Workspace)
 
-## Install
+## Why this exists
 
-AI Workspace is a globally installed CLI. Workspace state stays in the current project under `.ai/`.
-
-```bash
-npm install -g ai-workspace
-```
-
-```bash
-aiw init
-aiw status
-aiw agent list
-```
-
-The binary name is `aiw`. The package name is `ai-workspace`. After global install, the CLI works from any directory and does not require `ai-workspace` in the project's `node_modules`.
-
-### Install from this repository
-
-```bash
-npm install
-npm run build
-npx aiw --help
-```
-
-## What AI Workspace is
-
-Developers and coding agents need shared project knowledge: architecture, rules, skills, decisions, workflows, and references to external systems.
-
-Today that knowledge is usually copied into whatever directory a particular agent understands. That makes one vendor the center of the design.
+Coding agents each want project context in a different place: `.cursor/`, `CLAUDE.md`, `AGENTS.md`, and more. Teams copy the same rules into every native format. That duplicates knowledge, creates vendor lock-in, and falls apart across an **AI project workspace** with several repositories.
 
 AI Workspace inverts that:
 
@@ -46,116 +24,145 @@ AI Workspace inverts that:
 Human / Developer
         │
         ▼
-  AI Workspace
-        │
-      .ai/          ← canonical knowledge and contracts
+  AI Workspace (.ai/)     ← canonical AI agent context
         │
    Resolution
         │
    ┌────┼────┐
    │    │    │
-Cursor Codex Claude  ← adapters / native interfaces
+Cursor Codex Claude       ← generated native interfaces
 ```
 
-`.ai/` is the canonical AI knowledge layer of a project or workspace. Agent-native files are downstream consumers.
+`.ai/` is the Git-diffable source of truth. Native files are projections you can regenerate.
 
-## Why `.ai` exists
+## What you get
 
-- One Git-diffable source of truth for AI context.
-- The same knowledge can be consumed by multiple agents without duplication.
-- Workspace-level context can be inherited by many projects.
-- External knowledge systems can be **referenced**, not copied.
-- New agents can be added as declarative definitions instead of core releases.
+- **Canonical `.ai/`** — rules, architecture, skills, decisions, and workflows in one tree
+- **Cursor / Claude / Codex context** from the same files, without vendor-specific core code
+- **Custom agents** as YAML definitions (`aiw agent create`)
+- **Workspace federation** — register projects and run `aiw status --all`, `export --all`, `sync --all`
+- **Sources / import / promote / export / sync** — reference external knowledge, snapshot it, and compare related representations without last-write-wins
 
-## How this differs from agent-specific directories
+## Install
 
-| Layer | Role | Examples |
-| --- | --- | --- |
-| Canonical | Source of truth | `.ai/manifest.yaml`, `.ai/rules/`, `.ai/architecture/` |
-| Adapter | Translation | declarative mappings (Phase 2+) |
-| Native | Agent-owned interface | `.cursor/rules/`, `AGENTS.md`, `CLAUDE.md` |
-
-If Cursor disappeared tomorrow, the canonical layer would still be valid. A new agent would be added as a definition, not as a rewrite of the core.
-
-## Workspace and project inheritance
-
-Two scopes exist:
-
-- **Workspace** — a parent directory that may contain many projects.
-- **Project** — a specific repository or project tree.
-
-Default inheritance:
-
-```text
-workspace .ai  +  project .ai  =  effective project context
-```
-
-A project may **extend** (default), **replace**, or **disable** inherited context, and may **exclude** specific inherited identities.
-
-Phase 1 implements this in the resolver. Phase 6 adds a registry and `--all` orchestration; registry membership still does not imply inheritance.
-
-See [Scope, inheritance, and resolution](docs/specification/03-scope-inheritance-resolution.md).
-
-## How adapters work
-
-An **agent** is a named consumer. An **adapter** maps canonical resources onto that agent's native files and formats.
-
-Adapters are declarative YAML. The core ships generic format engines (`identity`, `markdown-frontmatter`, `concatenated-markdown`, `reference-index`). It does not contain vendor-named TypeScript branches.
-
-Generated files include an `aiw-provenance` HTML comment. Export will update those managed files and will not overwrite unmanaged native files.
-
-See [Agents and adapters](docs/specification/05-agents-adapters.md).
-
-## How sources work
-
-A **source** is a federated reference to knowledge that stays outside `.ai/`. Registration does not copy, import, or execute anything.
+Requires Node.js 20 or newer.
 
 ```bash
-aiw source add graphify --type directory --path ../.graphify --capabilities read,index
-aiw source list
-aiw source remove graphify
+npm install -g ai-workspace
 ```
 
-```text
-source add    = register a reference in the manifest
-source list   = show type, path, capabilities, and resolution status
-source remove = unregister the reference
-```
-
-The live files remain at `path`. `aiw import --source <id>` can later snapshot them into `.ai/sources/<id>/`. Registration itself does **not** create that directory.
-
-See [Sources](docs/specification/04-sources.md).
-
-## How to initialize a project
+The package name is `ai-workspace`. The CLI is `aiw`. After global install it works from any directory; project state stays in that project's `.ai/`.
 
 ```bash
-aiw init
+aiw --help
+aiw --version
 ```
 
-Result:
+## Quick start
+
+```bash
+cd your-project
+aiw init --name my-project
+```
+
+Add canonical context (this is the AI developer-tools layer agents will share):
+
+```bash
+mkdir -p .ai/rules
+echo "Do not commit secrets." > .ai/rules/security.md
+```
+
+Enable bundled agents and write native files:
+
+```bash
+aiw agent add cursor
+aiw agent add claude
+aiw agent add codex
+aiw export
+aiw status
+```
+
+That produces Cursor rules, `CLAUDE.md`, and `AGENTS.md` from the same `.ai/rules/security.md`. Edit the canonical file, then `aiw export` again.
+
+```text
+create = create an agent definition
+add    = register/enable it in the manifest
+export = materialize native output
+```
+
+## Canonical `.ai/` layout
+
+`aiw init` writes only `manifest.yaml`. Everything else is optional and created by you or by later commands:
 
 ```text
 .ai/
-└── manifest.yaml
+├── manifest.yaml          # contract (required after init)
+├── rules/                 # shared AI context
+├── architecture/
+├── skills/
+├── decisions/
+├── workflows/
+├── agents/                # local YAML definitions (optional)
+├── sources/               # imported snapshots (after aiw import)
+└── state/                 # sync hashes (Git-ignored)
 ```
 
-No other files are created. `aiw init` does not write `.cursor/`, `AGENTS.md`, or `CLAUDE.md`.
+Native files live **outside** `.ai/` and are never canonical:
+
+```text
+.cursor/rules/             # Cursor context (adapter output)
+CLAUDE.md                  # Claude context (adapter output)
+AGENTS.md                  # Codex context (adapter output)
+```
+
+## Agents without lock-in
+
+Bundled definition ids: `cursor`, `claude`, `codex`. They are YAML data, not TypeScript branches.
 
 ```bash
-aiw init --kind workspace
-aiw init --name accounting
-aiw validate
-aiw status
-aiw doctor
+aiw agent list
+aiw agent create my-agent
+aiw agent add my-agent
+aiw export --agent my-agent
+aiw agent remove cursor          # unregister only; native files stay
 ```
 
-`--json` is supported on these commands.
+A file at `.ai/agents/<id>.yaml` shadows a bundled definition with the same id. If Cursor disappeared tomorrow, `.ai/` would still be valid; a new agent would be another definition, not a core rewrite.
 
-See [CLI](docs/cli/README.md).
+## Sources, import, promote, and sync
 
-## How workspace federation works
+A **source** is a federated reference. Registration does not copy, import, or execute anything.
 
-A workspace manifest (`kind: workspace`) may register projects:
+```bash
+aiw source add knowledge --type directory --path ./docs --capabilities read,index,import
+aiw import --source knowledge
+aiw sync --source knowledge
+aiw promote --agent cursor
+```
+
+| Command | Meaning |
+| --- | --- |
+| `source add` | Register a path in the manifest |
+| `import` | Snapshot Source → `.ai/sources/<id>/` |
+| `export` | Canonical `.ai/` → native agent files |
+| `promote` | Native artifact → canonical `.ai/` (reversible mappings only) |
+| `sync` | State-aware comparison (`clean`, `canonical-changed`, `external-changed`, `conflict`) |
+
+`aiw sync` is report-only unless you pass `--apply`. `--apply` never last-write-wins and never writes into a live source. Concatenated files such as `CLAUDE.md` cannot be promoted.
+
+## Multi-project workspace
+
+A workspace registry is **not** inheritance. Registering a project only means it belongs to this workspace. Inheritance stays explicit via `extends`.
+
+```bash
+aiw init --kind workspace --name company-workspace
+aiw project add accounting ./accounting
+aiw project add wallet ./wallet
+aiw project list
+aiw status --all
+aiw export --all
+aiw sync --all
+```
 
 ```yaml
 specVersion: 1
@@ -169,103 +176,71 @@ projects:
     path: ./wallet
 ```
 
-```bash
-aiw init --kind workspace --name company-workspace
-aiw project add accounting ./accounting
-aiw project list
-aiw status --all
-aiw export --all
+`--all` iterates the registry. It does not scan the filesystem. Each project keeps its own `.ai/` and native files. `export --all` does not export the workspace `.ai/` as if it were a project.
+
+A project inherits workspace context only when its own manifest says so:
+
+```yaml
+specVersion: 1
+kind: project
+name: accounting
+
+extends:
+  - path: ../.ai
+    mode: extend
 ```
 
-```text
-project add    = register a path in the workspace manifest
-project list   = show id, path, and resolved/unresolved/invalid
-project remove = unregister (does not delete the project)
---all          = iterate registered projects, not the filesystem
-```
+See the [CLI](https://github.com/kamranshalilian/AI-Workspace/blob/main/docs/cli/README.md) and [scope, inheritance, and resolution](https://github.com/kamranshalilian/AI-Workspace/blob/main/docs/specification/03-scope-inheritance-resolution.md).
 
-Registration is not inheritance. A project receives workspace context only when its own manifest declares `extends`. `--all` never exports the workspace `.ai/` as if it were a project, and one project cannot write into another.
+## Current status
 
-Project ids are independent from directory names. Paths resolve from the workspace root, even when you run the CLI from `/tmp` with `--path /workspace`.
+Phase 6 is complete: specification through workspace federation.
 
-## How to add an agent
+Implemented: `init`, `status`, `validate`, `doctor`, `agent create|add|remove|list|status`, `export`, `source add|list|remove`, `import`, `promote`, `sync`, `project add|list|remove`, and `--all` on status, validate, doctor, export, and sync.
 
-Create a definition, enable it, then export native files. These are separate steps:
+Not in this release: plugins, MCP execution, cloud sync, GUI, automatic project discovery, or `import --all` / `promote --all`.
 
-```bash
-aiw agent create my-agent
-aiw agent add my-agent
-aiw export --agent my-agent
-```
+### Limitations
 
-```text
-create = create definition   (.ai/agents/<id>.yaml only)
-add    = enable/register     (manifest only)
-export = materialize native output
-```
-
-`aiw agent create` writes a valid empty-mapping stub. It does not modify the manifest, enable the agent, or write native files. Edit the YAML, then `aiw agent add` and `aiw export`.
-
-Bundled definition ids currently include `cursor`, `claude`, and `codex`. A project-local file at `.ai/agents/<id>.yaml` shadows a bundled definition with the same id.
-
-```bash
-aiw agent add cursor
-aiw export
-aiw agent list
-aiw agent status
-aiw export --agent cursor
-aiw agent remove cursor
-```
-
-`aiw agent add` registers the definition in `.ai/manifest.yaml` only. Removal does not delete native files.
-
-## How to add a source
-
-```bash
-aiw source add knowledge --type directory --path ../knowledge --capabilities read,index,import
-aiw import --source knowledge
-aiw sync --source knowledge
-```
-
-Registration changes only `.ai/manifest.yaml`. Import copies a snapshot into `.ai/sources/<id>/` and leaves the live source untouched. Sync compares the snapshot to the live tree and never last-write-wins.
-
-```bash
-aiw promote --agent cursor
-```
-
-Promotion converts native agent files into canonical `.ai/` resources when a declared reversible mapping exists (`identity` or `markdown-frontmatter`). Concatenated outputs cannot be promoted.
-
-## Current limitations
-
-- Concatenated and reference-index native files cannot be promoted (no lossless reverse mapping)
-- `sync --apply` never writes into a live source; it may refresh the imported snapshot
-- No automatic native→canonical promotion during sync
-- `--all` requires the active scope to be `kind: workspace`; it does not walk from a nested project up to a parent workspace
-- Import and promote remain explicitly scoped (no `--all`)
-- No executable adapters or plugins
+- Concatenated and reference-index native files cannot be promoted
+- `sync --apply` may refresh an imported snapshot; it never writes the live source
+- `--all` requires `kind: workspace` (pass `--path` to the workspace root)
 - Source content is not fed into agent export
-- No MCP, embeddings, cloud, or GUI
+- No executable adapters or plugins
+
+## Support
+
+Donations are optional and help fund continued development of AI Workspace.
+
+**USDT** (optional)
+
+```text
+0x4430DA48ad0bF37583262966097E7AC76482b83A
+```
+
+Issues and discussion: [github.com/kamranshalilian/AI-Workspace/issues](https://github.com/kamranshalilian/AI-Workspace/issues)
+
+## Documentation
+
+| Area | Location |
+| --- | --- |
+| Specification | [docs/specification/](https://github.com/kamranshalilian/AI-Workspace/tree/main/docs/specification) |
+| Architecture | [docs/architecture/](https://github.com/kamranshalilian/AI-Workspace/tree/main/docs/architecture) |
+| CLI | [docs/cli/](https://github.com/kamranshalilian/AI-Workspace/tree/main/docs/cli) |
+| Integrations | [docs/integrations/](https://github.com/kamranshalilian/AI-Workspace/tree/main/docs/integrations) |
 
 ## Development
 
 ```bash
+git clone https://github.com/kamranshalilian/AI-Workspace.git
+cd AI-Workspace
+npm install
 npm test
 npm run build
 ```
 
 This repository dogfoods itself as `kind: project` under `.ai/`.
 
-## Documentation
-
-| Area | Location |
-| --- | --- |
-| Specification | [docs/specification/](docs/specification/) |
-| Architecture | [docs/architecture/](docs/architecture/) |
-| Phase 0 review | [docs/architecture/phase-0-review.md](docs/architecture/phase-0-review.md) |
-| CLI | [docs/cli/](docs/cli/) |
-| Integrations | [docs/integrations/](docs/integrations/) |
-| Open decisions | [docs/architecture/open-decisions.md](docs/architecture/open-decisions.md) |
-
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](https://github.com/kamranshalilian/AI-Workspace/blob/main/LICENSE).
