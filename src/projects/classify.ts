@@ -1,4 +1,4 @@
-import { hasManifest, manifestPathFor } from "../filesystem/discovery.js";
+import { hasManifest, manifestPathFor, realPathIfExists } from "../filesystem/discovery.js";
 import { isDirectory, pathExists } from "../filesystem/io.js";
 import { resolveFromBase, toPosixPath } from "../filesystem/paths.js";
 import { loadManifestFromFile } from "../manifest/index.js";
@@ -16,10 +16,11 @@ export interface FederatedProject {
 
 export function classifyProject(workspaceRoot: string, id: string, declaredPath: string): FederatedProject {
   const path = toPosixPath(declaredPath);
-  const resolvedPath = resolveFromBase(workspaceRoot, path);
-  if (!pathExists(resolvedPath)) {
-    return { id, path, resolvedPath, status: "unresolved" };
+  const declaredResolved = resolveFromBase(workspaceRoot, path);
+  if (!pathExists(declaredResolved)) {
+    return { id, path, resolvedPath: declaredResolved, status: "unresolved" };
   }
+  const resolvedPath = realPathIfExists(declaredResolved);
   if (!isDirectory(resolvedPath)) {
     return {
       id,

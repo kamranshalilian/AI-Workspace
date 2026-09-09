@@ -39,7 +39,7 @@ test("classifyProject uses the workspace root, not process.cwd()", () => {
     process.chdir(os.tmpdir());
     const classified = classifyProject(workspace, "accounting", "./accounting");
     assert.equal(classified.status, "resolved");
-    assert.equal(classified.resolvedPath, path.resolve(project));
+    assert.equal(classified.resolvedPath, fs.realpathSync(project));
   } finally {
     process.chdir(cwd);
     rmTempDir(workspace);

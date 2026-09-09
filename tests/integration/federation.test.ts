@@ -122,6 +122,28 @@ test("project list reports resolved, unresolved, and invalid deterministically",
   }
 });
 
+test("symlink project paths that share a real directory are duplicate/invalid", () => {
+  const { workspace } = federatedWorkspace();
+  try {
+    fs.symlinkSync("accounting", path.join(workspace, "accounting-link"));
+    assert.equal(aiw(["project", "add", "accounting", "./accounting", "--path", workspace]).status, 0);
+    assert.equal(aiw(["project", "add", "accounting-link", "./accounting-link", "--path", workspace]).status, 0);
+    const listed = aiw(["project", "list", "--json", "--path", workspace]);
+    assert.equal(listed.status, 0, listed.stderr);
+    const payload = JSON.parse(listed.stdout) as {
+      projects: { id: string; status: string; invalidReason?: string }[];
+    };
+    const accounting = payload.projects.find((item) => item.id === "accounting");
+    const linked = payload.projects.find((item) => item.id === "accounting-link");
+    assert.equal(accounting?.status, "invalid");
+    assert.equal(linked?.status, "invalid");
+    assert.match(accounting?.invalidReason ?? "", /Duplicate project path/);
+    assert.match(linked?.invalidReason ?? "", /Duplicate project path/);
+  } finally {
+    rmTempDir(workspace);
+  }
+});
+
 test("parent and absolute registry paths resolve from the workspace", () => {
   const parent = makeTempDir("aiw-parent-");
   const workspace = path.join(parent, "workspace");
