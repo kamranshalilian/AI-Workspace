@@ -1,6 +1,6 @@
 # AI Workspace Specification
 
-**Status:** Phase 0 approved. Spec version 1 is the Phase 1 implementation contract.
+**Status:** Spec version 1 remains the implementation contract. Phase 7A adds the Agent Skills relationship without changing the manifest schema.
 
 **Spec version described:** `1`
 
@@ -21,6 +21,7 @@ If implementation would violate a rule here, stop, update this specification, th
 | [07 — CLI](07-cli.md) | `aiw` command contract |
 | [08 — Security](08-security.md) | Exclusions, trust, non-execution defaults |
 | [09 — Acceptance](09-acceptance.md) | Scenarios A–J and test obligations |
+| [10 — Agent Skills](10-agent-skills.md) | Interoperable `SKILL.md`; AI Workspace does not compete with the format |
 
 Related:
 
@@ -32,7 +33,7 @@ Related:
 
 1. `.ai` is the canonical source of AI project/workspace knowledge.
 2. Agent-native files are adapters/consumers, never the center of the design.
-3. Core logic must not hard-code named vendors (`cursor`, `claude`, `codex`, `graphify`, `spec-kit`).
+3. Core logic must not hard-code named vendors (`cursor`, `claude`, `codex`, `copilot`, `gemini`, `windsurf`, `cline`, `roo`, `graphify`, `spec-kit`).
 4. Inheritance is semantic (manifest/resolution), never uncontrolled filesystem copying.
 5. Sources are federated by reference. Copying is opt-in, never required.
 6. The system is local-first. No cloud service is required.
@@ -40,6 +41,7 @@ Related:
 8. User artifacts are never silently overwritten or deleted.
 9. Linux, macOS, and Windows are first-class. Symlinks are not assumed.
 10. The same repository + manifest + definitions should produce deterministic output whenever practical.
+11. AI Workspace does not compete with the Agent Skills format. Agent Skills is treated as an interoperable artifact standard where applicable.
 
 ## Architectural test
 

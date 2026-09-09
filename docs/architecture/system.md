@@ -2,9 +2,9 @@
 
 ## Purpose
 
-AI Workspace is a filesystem + manifest + resolution + adapter layer.
+AI Workspace is a local-first Context Federation and Governance Layer: filesystem + manifest + resolution + adapter + Skill governance types.
 
-It is not a model host, not a cloud service, and not a Cursor plugin.
+It is not a model host, not a cloud service, not a Cursor plugin, and not an Agent Skills runtime or marketplace.
 
 ```text
                     Human / Developer
@@ -38,6 +38,27 @@ It is not a model host, not a cloud service, and not a Cursor plugin.
 
 Those three agents are illustrations. The boxes are **instances of Agent**, not subsystems.
 
+Agent Skills (`SKILL.md`) is an interoperability artifact inside canonical `.ai/skills/` (and optionally inside federated sources). Projection still goes through generic adapters. See [Agent Skills](agent-skills.md).
+
+```text
+                         AI Workspace
+                              │
+              ┌───────────────┴────────────────┐
+              │                                │
+       Context Federation               Skills Management
+              │                                │
+     rules  context  sources          registry  deps  trust
+              │                                │
+              └──────────────┬─────────────────┘
+                             │
+                      Effective Context
+                             │
+                 ┌───────────┴───────────┐
+                 │                       │
+          Agent Skills              Other formats
+           SKILL.md                  / adapters
+```
+
 ## Layering
 
 ```text
@@ -54,7 +75,8 @@ Those three agents are illustrations. The boxes are **instances of Agent**, not 
 │  ├─ resolution (inheritance merge)          │
 │  ├─ sources (generic types)                 │
 │  ├─ agent definition loader                 │
-│  └─ adapter engine + format engines         │
+│  ├─ adapter engine + format engines         │
+│  └─ skills (parse SKILL.md, Effective Set)  │
 ├─────────────────────────────────────────────┤
 │ Data                                        │
 │  ├─ user manifests and knowledge            │

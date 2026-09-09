@@ -22,6 +22,7 @@ MIT.
 12. No user-global config.
 13. Promote is Phase 5 and always explicit.
 14. This repository dogfoods as `kind: project`.
+15. Agent Skills (`SKILL.md`) is an external interoperable artifact. AI Workspace does not replace it. Phase 7A is documentation, types, and architecture tests only.
 
 ## Residual architectural caveat
 

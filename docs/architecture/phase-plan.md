@@ -67,8 +67,29 @@ Phase 5 implemented generic import, promote, deterministic state identity in `.a
 
 Phase 6 implemented workspace federation. `aiw agent enable|disable` was listed in the original phase sketch and is **not** implemented.
 
-## Phase 7 — Ecosystem (only if justified)
+## Phase 7A — Strategic repositioning (architecture gate)
 
-Adapter/source registries, templates, community integrations.
+Documentation, types, fixtures, and architecture tests only.
 
-Not planned until v1 of Phases 1–6 is real.
+- Agent Skills is an external artifact standard (`SKILL.md`)
+- `.ai/skills/` is the canonical collection, not a competing format
+- Effective Skill Set is derived from existing resolution
+- No Skill CLI, marketplace, sandbox, or `skills:` manifest key
+
+See [agent-skills.md](agent-skills.md), [skill-lifecycle.md](../concepts/skill-lifecycle.md), [positioning.md](../strategy/positioning.md), and [specification 10](../specification/10-agent-skills.md).
+
+## Phase 7 — later implementation (not started)
+
+Only after 7A is approved. Suggested order; each step needs its own approval:
+
+1. **7B** — optional Skill registry entries (additive metadata; still no proprietary `SKILL.md`)
+2. **7C** — persist trust/policy without executing scripts
+3. **7D** — explicit import/promote of standard Skill trees from sources (reuse Phase 5; no auto-copy)
+4. **7E** — surface `id@version` when Agent Skills version is present
+5. **7F** — dependency *model* validation (still no installer)
+
+Still out of scope: marketplace, cloud registry, MCP, embeddings, LLM merge, Skill VM, vendor Skill engines.
+
+## Phase 8
+
+Not started. Do not begin Phase 8 from this gate.

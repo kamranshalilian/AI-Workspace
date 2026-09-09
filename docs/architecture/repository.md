@@ -14,6 +14,7 @@ AI-Workspace/
 │   ├── adapters/                 # generic engine + format engines
 │   ├── sources/
 │   ├── projects/                 # workspace registry, identity, classification
+│   ├── skills/                   # Agent Skills parse + Effective Skill Set
 │   ├── state/                    # sync identity + last-known hashes
 │   ├── filesystem/
 │   └── config/
@@ -28,6 +29,8 @@ AI-Workspace/
 ├── docs/
 │   ├── specification/
 │   ├── architecture/
+│   ├── concepts/
+│   ├── strategy/
 │   ├── integrations/
 │   └── cli/
 ├── examples/
@@ -53,6 +56,7 @@ AI-Workspace/
 | `src/state` | Content identity, four-state compare, `.ai/state/sync.yaml` | Vendor branches |
 | `src/agents` | Definition search and parse | `if cursor` |
 | `src/adapters` | Mapping interpreter, format engines | CLI |
+| `src/skills` | `SKILL.md` parse, identity, Effective Skill Set | Vendor Skill engines, script execution, registry CLI |
 | `src/core` | Facade composing the above | `process.argv` |
 | `src/cli` | argv, output, exit codes | Schema rules duplicated ad hoc |
 

@@ -96,3 +96,13 @@ Before implementation of a phase is declared done, re-ask:
 3. Could 20 registered projects inherit workspace context?
 
 If a pull request adds `if (id === "cursor")` or `if (id === "graphify")` to core, it fails this specification.
+
+Phase 7A additionally requires architecture tests that:
+
+- accept `.ai/skills/<id>/SKILL.md` as canonical Agent Skills content
+- apply inheritance/exclude to Skills
+- register an external Skill source without copying
+- represent Skill provenance from the resolved snapshot
+- keep existing agent export working
+- forbid vendor branching in Core Skill semantics
+- do not require a proprietary Skill format

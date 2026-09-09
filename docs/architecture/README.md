@@ -1,14 +1,17 @@
 # Architecture
 
-**Status:** Phase 0 approved. Phase 1 core and Phase 2 declarative adapters are implemented.
+**Status:** Phase 6 implemented. Phase 7A is the Agent Skills architecture gate (documentation, types, fixtures, tests). It is not a Skill runtime.
 
 | Document | Contents |
 | --- | --- |
 | [System architecture](system.md) | Layers, boundaries, data flow |
+| [Agent Skills](agent-skills.md) | Interoperability with `SKILL.md`; canonical `.ai/skills/` |
 | [Repository structure](repository.md) | Target tree and module ownership |
 | [Phase plan](phase-plan.md) | What lands when |
 | [Phase 0 review](phase-0-review.md) | Required review: state, decisions, schema, CLI, tests, plan |
 | [Open decisions](open-decisions.md) | Items that need explicit approval |
+| [Skill lifecycle](../concepts/skill-lifecycle.md) | Discover…remove; implemented vs planned |
+| [Positioning](../strategy/positioning.md) | Governance layer vs Agent Skills artifact |
 
 ## Module boundaries (non-negotiable)
 
@@ -22,6 +25,7 @@ Filesystem
 Agent (definition loading, not vendor logic)
 Adapter (generic engine)
 Source
+Skills (Agent Skills parse + Effective Skill Set; not a vendor runtime)
 CLI
 Config
 ```

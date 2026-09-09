@@ -43,6 +43,22 @@ Knowledge (optional): `context`, `rules`, `skills`, `roles`, `architecture`, `de
 
 Reserved: `manifest.yaml`, `agents/`, `sources/`, `state/`, `cache/`.
 
+## Skills collection
+
+`.ai/skills/` is the canonical Skill collection. Prefer the Agent Skills layout:
+
+```text
+.ai/skills/<skill-name>/
+├── SKILL.md
+├── scripts/
+├── references/
+└── assets/
+```
+
+Identity of the standard artifact is `skills/<skill-name>/SKILL.md`. Flat `skills/*.md` files remain generic resources.
+
+`scripts/` are stored as files. Core never executes them. See [Agent Skills](10-agent-skills.md).
+
 ## Integration strategies
 
 See [Agents and adapters](05-agents-adapters.md). Default portable strategy is `generated`.

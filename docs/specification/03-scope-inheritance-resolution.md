@@ -132,6 +132,12 @@ Example: `.ai/rules/security.md` → `rules/security.md`.
 
 `replace` and `disable` skip parent resources entirely.
 
+### Skills
+
+Skills are resources. Standard Agent Skills artifacts use identity `skills/<id>/SKILL.md`.
+
+They follow the same table as resources. The **Effective Skill Set** is that subset after merge. It is not a second resolver and not a Skill runtime. See [Agent Skills](10-agent-skills.md).
+
 ### Sources
 
 **Proposed default (needs approval):** sources **are inherited** in `extend` mode.

@@ -6,11 +6,11 @@
 [![License: MIT](https://img.shields.io/npm/l/@empratur256/ai-workspace.svg)](https://github.com/kamranshalilian/AI-Workspace/blob/main/LICENSE)
 [![GitHub](https://img.shields.io/badge/GitHub-kamranshalilian%2FAI--Workspace-181717?logo=github)](https://github.com/kamranshalilian/AI-Workspace)
 
-Local-first **AI context** for software projects and multi-project workspaces.
+Local-first **Context Federation and Governance Layer** for AI agents, projects, and workspaces.
 
-AI Workspace (`aiw`) gives a repository one canonical place for agent knowledge — `.ai/` — and treats Cursor, Claude, Codex, and custom-agent files as **adapters** of that layer, not as the source of truth.
+AI Workspace (`aiw`) gives a repository one canonical place for agent knowledge — `.ai/` — and treats Cursor, Claude, Codex, and custom-agent files as **adapters** of that layer, not as the source of truth. **Agent Skills** (`SKILL.md`) is an interoperable artifact format that AI Workspace can store, inherit, and project. AI Workspace does not replace that format.
 
-**Status: Phase 6 (workspace federation).** The public CLI covers init, inheritance, declarative agents, export, federated sources, import, promote, sync, and multi-project `--all`.
+**Status: Phase 6 complete; Phase 7A architecture gate.** The public CLI covers init, inheritance, declarative agents, export, federated sources, import, promote, sync, and multi-project `--all`. Phase 7A adds Agent Skills interoperability documentation and types. There is no Skill CLI yet.
 
 Repository: [github.com/kamranshalilian/AI-Workspace](https://github.com/kamranshalilian/AI-Workspace)
 
@@ -24,9 +24,9 @@ AI Workspace inverts that:
 Human / Developer
         │
         ▼
-  AI Workspace (.ai/)     ← canonical AI agent context
+  AI Workspace (.ai/)     ← canonical federation + governance
         │
-   Resolution
+   Resolution → Effective Context
         │
    ┌────┼────┐
    │    │    │
@@ -38,6 +38,7 @@ Cursor Codex Claude       ← generated native interfaces
 ## What you get
 
 - **Canonical `.ai/`** — rules, architecture, skills, decisions, and workflows in one tree
+- **Agent Skills** — `.ai/skills/<name>/SKILL.md` as the standard artifact; not a proprietary Skill format
 - **Cursor / Claude / Codex context** from the same files, without vendor-specific core code
 - **Custom agents** as YAML definitions (`aiw agent create`)
 - **Workspace federation** — register projects and run `aiw status --all`, `export --all`, `sync --all`
@@ -99,7 +100,7 @@ export = materialize native output
 ├── manifest.yaml          # contract (required after init)
 ├── rules/                 # shared AI context
 ├── architecture/
-├── skills/
+├── skills/                 # Agent Skills collection (SKILL.md)
 ├── decisions/
 ├── workflows/
 ├── agents/                # local YAML definitions (optional)
@@ -194,11 +195,11 @@ See the [CLI](https://github.com/kamranshalilian/AI-Workspace/blob/main/docs/cli
 
 ## Current status
 
-Phase 6 is complete: specification through workspace federation.
+Phase 6 is complete: specification through workspace federation. Phase 7A documents Agent Skills as an interoperable artifact and adds architecture tests. No Skill marketplace, CLI, or execution engine.
 
 Implemented: `init`, `status`, `validate`, `doctor`, `agent create|add|remove|list|status`, `export`, `source add|list|remove`, `import`, `promote`, `sync`, `project add|list|remove`, and `--all` on status, validate, doctor, export, and sync.
 
-Not in this release: plugins, MCP execution, cloud sync, GUI, automatic project discovery, or `import --all` / `promote --all`.
+Not in this release: Skill registry CLI, plugins, MCP execution, cloud sync, GUI, automatic project discovery, or `import --all` / `promote --all`.
 
 ### Limitations
 
@@ -207,6 +208,8 @@ Not in this release: plugins, MCP execution, cloud sync, GUI, automatic project 
 - `--all` requires `kind: workspace` (pass `--path` to the workspace root)
 - Source content is not fed into agent export
 - No executable adapters or plugins
+- Skill scripts under `.ai/skills/` are never executed
+- No dedicated `aiw skill` commands
 
 ## Support
 
@@ -226,6 +229,8 @@ Issues and discussion: [github.com/kamranshalilian/AI-Workspace/issues](https://
 | --- | --- |
 | Specification | [docs/specification/](https://github.com/kamranshalilian/AI-Workspace/tree/main/docs/specification) |
 | Architecture | [docs/architecture/](https://github.com/kamranshalilian/AI-Workspace/tree/main/docs/architecture) |
+| Agent Skills | [docs/architecture/agent-skills.md](https://github.com/kamranshalilian/AI-Workspace/blob/main/docs/architecture/agent-skills.md) |
+| Positioning | [docs/strategy/positioning.md](https://github.com/kamranshalilian/AI-Workspace/blob/main/docs/strategy/positioning.md) |
 | CLI | [docs/cli/](https://github.com/kamranshalilian/AI-Workspace/tree/main/docs/cli) |
 | Integrations | [docs/integrations/](https://github.com/kamranshalilian/AI-Workspace/tree/main/docs/integrations) |
 

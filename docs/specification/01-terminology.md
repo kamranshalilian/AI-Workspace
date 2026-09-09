@@ -6,7 +6,7 @@ Words below are normative. Do not use them interchangeably.
 
 | Term | Meaning |
 | --- | --- |
-| **AI Workspace** | The product. A local-first context and workspace layer. |
+| **AI Workspace** | The product. A local-first Context Federation and Governance Layer for AI agents, projects, and workspaces. |
 | **`aiw`** | The CLI binary. |
 | **Specification** | This document set. Manifests declare `specVersion` against it. |
 | **Core** | Tool-agnostic libraries: manifest, filesystem, resolution, validation, security. |
@@ -35,6 +35,10 @@ A workspace root may itself contain knowledge, agents, and sources. It is not a 
 | **Resource kind** | The first path segment under `.ai/` for a knowledge file, e.g. `rules`. |
 | **Resource identity** | `kind` + POSIX relative path, e.g. `rules/security.md`. Unique within a resolved snapshot. |
 | **Effective context** | The resolved set of resources, sources, agents, and policies for a scope. |
+| **Agent Skills** | External artifact standard (`SKILL.md`, `name`, `description`). Not an AI Workspace format. |
+| **Skill artifact** | A standard Agent Skills package, typically `.ai/skills/<id>/SKILL.md`. |
+| **Effective Skill Set** | Deterministic Skill subset of effective context after inheritance. Not a runtime. |
+| **Skill trust** | Governance label: `untrusted`, `reviewed`, or `trusted`. Does not execute scripts. |
 
 ## Inheritance and resolution
 
@@ -110,3 +114,4 @@ Do not implement or document as if they exist:
 - Embeddings / vector index
 - MCP server
 - Executable plugin marketplace
+- Proprietary replacement for `SKILL.md`

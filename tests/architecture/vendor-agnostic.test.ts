@@ -4,15 +4,36 @@ import path from "node:path";
 import { test } from "node:test";
 import { repoRoot } from "../helpers.js";
 
+const vendorIds = [
+  "cursor",
+  "claude",
+  "codex",
+  "copilot",
+  "gemini",
+  "windsurf",
+  "cline",
+  "roo",
+  "graphify",
+  "spec-kit",
+  "speckit",
+];
+
+const vendorAlternation = vendorIds.map(escapeRegExp).join("|");
+
 const forbidden = [
-  /\bif\s*\([^)]*(cursor|claude|codex|graphify|spec-kit|speckit)/i,
-  /\b(agent|id|name)\s*===\s*['"](cursor|claude|codex|graphify)['"]/i,
+  new RegExp(String.raw`\bif\s*\([^)]*\b(?:${vendorAlternation})\b`, "i"),
+  new RegExp(String.raw`\b(?:agent|id|name)\s*===?\s*['"](?:${vendorAlternation})['"]`, "i"),
+  new RegExp(String.raw`\bswitch\s*\([^)]*\b(?:${vendorAlternation})\b`, "i"),
 ];
 
 const forbiddenTokens = [
   "cursor",
   "claude",
   "codex",
+  "copilot",
+  "gemini",
+  "windsurf",
+  "cline",
   "graphify",
   "spec-kit",
   "speckit",
@@ -21,7 +42,22 @@ const forbiddenTokens = [
   "CLAUDE.md",
 ];
 
-const scannedRoots = ["core", "manifest", "resolution", "filesystem", "config", "agents", "adapters", "sources", "state", "projects"];
+/** Short tokens must use word boundaries (`roo` must not match `root`). */
+const forbiddenBoundedTokens = ["roo"];
+
+const scannedRoots = [
+  "core",
+  "manifest",
+  "resolution",
+  "filesystem",
+  "config",
+  "agents",
+  "adapters",
+  "sources",
+  "state",
+  "projects",
+  "skills",
+];
 
 test("core modules do not contain vendor-specific branching or names", () => {
   const srcRoot = path.join(repoRoot(), "src");
@@ -43,6 +79,11 @@ test("core modules do not contain vendor-specific branching or names", () => {
           hits.push(`${rel}: contains '${token}'`);
         }
       }
+      for (const token of forbiddenBoundedTokens) {
+        if (new RegExp(String.raw`\b${escapeRegExp(token)}\b`, "i").test(text)) {
+          hits.push(`${rel}: contains bounded '${token}'`);
+        }
+      }
     }
   }
 
@@ -51,10 +92,25 @@ test("core modules do not contain vendor-specific branching or names", () => {
 
 test("no vendor-named or custom-agent TypeScript implementations exist", () => {
   const srcRoot = path.join(repoRoot(), "src");
-  for (const name of ["cursor", "claude", "codex", "graphify", "spec-kit", "speckit", "test-agent", "my-agent"]) {
+  for (const name of [
+    "cursor",
+    "claude",
+    "codex",
+    "copilot",
+    "gemini",
+    "windsurf",
+    "cline",
+    "roo",
+    "graphify",
+    "spec-kit",
+    "speckit",
+    "test-agent",
+    "my-agent",
+  ]) {
     assert.equal(fs.existsSync(path.join(srcRoot, "adapters", `${name}.ts`)), false);
     assert.equal(fs.existsSync(path.join(srcRoot, "agents", `${name}.ts`)), false);
     assert.equal(fs.existsSync(path.join(srcRoot, "sources", `${name}.ts`)), false);
+    assert.equal(fs.existsSync(path.join(srcRoot, "skills", `${name}.ts`)), false);
   }
 });
 
@@ -62,6 +118,10 @@ test("bundled definition locator does not depend on process.cwd()", () => {
   const text = fs.readFileSync(path.join(repoRoot(), "src", "agents", "index.ts"), "utf8");
   assert.equal(text.includes("process.cwd()"), false);
 });
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 function walkTs(dir: string): string[] {
   if (!fs.existsSync(dir)) {

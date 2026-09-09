@@ -114,3 +114,16 @@ Not fully solvable in a filesystem layer. v1 obligations:
 - Phase 1 does not feed sources into adapters
 
 When source export is added, the same exclusions and size/binary checks apply, and the specification must be updated before implementation.
+
+## Agent Skills scripts
+
+A Skill may include `scripts/` and other helper files. Those files are untrusted content.
+
+Phase 7A:
+
+- default Skill trust is `untrusted`
+- parse, resolve, export, import, sync, and Effective Skill Set derivation must not run Skill scripts
+- no Skill sandbox is implemented
+- `policies.trust.executableAdapters` and `executableSources` remain `false`
+
+Trust labels (`untrusted`, `reviewed`, `trusted`) and later script/network policy are governance fields. They do not grant execution in spec v1.

@@ -1,6 +1,6 @@
 # Integrations
 
-**Status:** Phase 6 ships bundled **YAML** agent definitions, a generic adapter engine, `aiw agent create`, generic federated **sources**, import, promote, state-aware sync, and registry-driven **workspace federation**. No vendor-specific TypeScript modules exist.
+**Status:** Phase 6 ships bundled **YAML** agent definitions, a generic adapter engine, `aiw agent create`, generic federated **sources**, import, promote, state-aware sync, and registry-driven **workspace federation**. Phase 7A treats **Agent Skills** as an external artifact standard. No vendor-specific TypeScript modules exist.
 
 AI Workspace does not give any vendor or tool a privileged core module.
 
@@ -51,6 +51,18 @@ See [Sources](../specification/04-sources.md).
 ## Workspaces
 
 A workspace is `kind: workspace` plus a `projects:` registry. `--all` iterates that registry. Inheritance still requires explicit `extends` on each project. No vendor- or source-specific federation code exists.
+
+## Agent Skills
+
+Skills are canonical files, preferably `.ai/skills/<id>/SKILL.md`. They are not a Core vendor engine.
+
+- Interoperate with Agent Skills; do not fork `SKILL.md`
+- Inherit and exclude Skills like any other resource
+- Register an external Skill directory as a generic **source** without copying
+- Export remains the generic adapter path
+- Never execute Skill `scripts/`
+
+See [Agent Skills architecture](../architecture/agent-skills.md).
 
 ## Adding a new integration later
 
