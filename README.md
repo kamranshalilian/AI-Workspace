@@ -1,9 +1,9 @@
 # AI Workspace
 
-[![npm version](https://img.shields.io/npm/v/ai-workspace.svg)](https://www.npmjs.com/package/ai-workspace)
-[![npm downloads](https://img.shields.io/npm/dm/ai-workspace.svg)](https://www.npmjs.com/package/ai-workspace)
-[![Node.js](https://img.shields.io/node/v/ai-workspace.svg)](https://www.npmjs.com/package/ai-workspace)
-[![License: MIT](https://img.shields.io/npm/l/ai-workspace.svg)](https://github.com/kamranshalilian/AI-Workspace/blob/main/LICENSE)
+[![npm version](https://img.shields.io/npm/v/@empratur256/ai-workspace.svg)](https://www.npmjs.com/package/@empratur256/ai-workspace)
+[![npm downloads](https://img.shields.io/npm/dm/@empratur256/ai-workspace.svg)](https://www.npmjs.com/package/@empratur256/ai-workspace)
+[![Node.js](https://img.shields.io/node/v/@empratur256/ai-workspace.svg)](https://www.npmjs.com/package/@empratur256/ai-workspace)
+[![License: MIT](https://img.shields.io/npm/l/@empratur256/ai-workspace.svg)](https://github.com/kamranshalilian/AI-Workspace/blob/main/LICENSE)
 [![GitHub](https://img.shields.io/badge/GitHub-kamranshalilian%2FAI--Workspace-181717?logo=github)](https://github.com/kamranshalilian/AI-Workspace)
 
 Local-first **AI context** for software projects and multi-project workspaces.
@@ -48,10 +48,10 @@ Cursor Codex Claude       ← generated native interfaces
 Requires Node.js 20 or newer.
 
 ```bash
-npm install -g ai-workspace
+npm install -g @empratur256/ai-workspace
 ```
 
-The package name is `ai-workspace`. The CLI is `aiw`. After global install it works from any directory; project state stays in that project's `.ai/`.
+The package name is `@empratur256/ai-workspace`. The CLI is `aiw`. After global install it works from any directory; project state stays in that project's `.ai/`.
 
 ```bash
 aiw --help

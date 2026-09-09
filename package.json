@@ -1,5 +1,5 @@
 {
-  "name": "ai-workspace",
+  "name": "@empratur256/ai-workspace",
   "version": "0.1.0",
   "description": "Local-first AI context layer for projects and workspaces. Canonical .ai/ knowledge for Cursor, Claude, Codex, and custom agents — without vendor lock-in.",
   "type": "module",

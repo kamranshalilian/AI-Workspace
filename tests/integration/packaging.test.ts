@@ -45,7 +45,7 @@ test("P/Q/R/S — packed global CLI works outside the repository", { timeout: 18
 
     const aiwBin = path.join(prefix, "bin", "aiw");
     assert.equal(fs.existsSync(aiwBin), true, `missing global bin at ${aiwBin}`);
-    const pkgRoot = path.join(prefix, "lib", "node_modules", "ai-workspace");
+    const pkgRoot = path.join(prefix, "lib", "node_modules", "@empratur256", "ai-workspace");
     assert.equal(fs.existsSync(path.join(pkgRoot, "src")), false);
     assert.notEqual(path.resolve(pkgRoot), path.resolve(repoRoot()));
     const locator = fs.readFileSync(path.join(pkgRoot, "dist", "agents", "index.js"), "utf8");
