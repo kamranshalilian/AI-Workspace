@@ -4,7 +4,7 @@
   "description": "Local-first AI context layer for projects and workspaces. Canonical .ai/ knowledge for Cursor, Claude, Codex, and custom agents — without vendor lock-in.",
   "type": "module",
   "bin": {
-    "aiw": "./dist/cli/index.js"
+    "aiw": "dist/cli/index.js"
   },
   "main": "./dist/core/index.js",
   "types": "./dist/core/index.d.ts",
